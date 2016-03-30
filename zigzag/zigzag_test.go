@@ -83,5 +83,17 @@ func TestDel(t *testing.T) {
 }
 
 func TestKeys(t *testing.T) {
+  // cache := GetCache()
+
+  Set("adam[23]", "value")
+
+  pattern := "^[a-z]+[[0-9]+]$"
+
+  keys := Keys(pattern)
+
+  if (keys[0] != "adam[23]") {
+    t.Errorf("Keys: expect %v, got %v", "adam[23]", keys[0])
+  }
 
 }
+

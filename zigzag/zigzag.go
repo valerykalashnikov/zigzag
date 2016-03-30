@@ -48,6 +48,9 @@ func Upd(key string, value interface {}) bool {
   return store.Upd(key, value)
 }
 
+func Keys(pattern string) []string {
+  return store.Keys(pattern)
+}
 
 func GetCache() *cache.Cache{
   return store
