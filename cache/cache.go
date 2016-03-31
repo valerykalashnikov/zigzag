@@ -41,7 +41,10 @@ func (c *Cache) Set(key string, value interface {}, moment Momenter) {
 }
 
 func (c *Cache) Get(key string) (interface{}, bool)  {
-  if v, ok := c.Items[key]; ok {
+  c.mux.RLock()
+  v, ok := c.Items[key]
+  c.mux.RUnlock()
+  if ok {
     expired := v.Expired()
     if expired {
       return nil, false

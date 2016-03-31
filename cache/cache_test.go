@@ -176,14 +176,24 @@ func TestKeys(t *testing.T) {
 
   keys := cache.Keys(pattern)
 
-  if (keys[0] != "adam[23]") {
+  if (!stringInSlice("adam[23]", keys)) {
     t.Errorf("Keys: expect %v, got %v", "adam[23]", keys[0])
   }
-  if (keys[1] != "eve[7]") {
-    t.Errorf("Keys: expect %v, got %v", "adam[7]", keys[1])
+  if (!stringInSlice("eve[7]", keys)) {
+    t.Errorf("Keys: expect %v, got %v", "eve[7]", keys[1])
   }
 
   if (len(keys) != 2) {
     t.Error("Keys: length of keys should be 2")
   }
+}
+
+
+func stringInSlice(a string, list []string) bool {
+    for _, b := range list {
+        if b == a {
+            return true
+        }
+    }
+    return false
 }
