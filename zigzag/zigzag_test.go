@@ -58,9 +58,9 @@ func TestSet(t *testing.T) {
 func TestGet(t *testing.T) {
   key := "key"
 
-  expected := cache.Item{"value", 0}
+  expected := "value"
   //setup
-  Set(key, "value", &Present{})
+  Set(key, expected, &Present{})
 
   // run
   actual, _ := Get(key)
@@ -75,11 +75,11 @@ func TestGet(t *testing.T) {
 func TestUpd(t *testing.T) {
   key := "key"
 
-  expected := cache.Item{"newValue", 0}
+  expected :="newValue"
   //setup
   Set(key, "value", &Present{})
 
-  Upd(key, "newValue")
+  Upd(key, expected)
   // run
   actual, _ := Get(key)
 

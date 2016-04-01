@@ -94,12 +94,12 @@ func TestGet(t *testing.T) {
   // when ttl is not defined
   presentTime = &PresentTime{0}
   key := "key"
-  expected := Item{"value", 0}
+  expected := &Item{"value", 0}
 
   cache.Set(key, "value", presentTime)
   actual, _ := cache.Get(key)
 
-  if (actual != expected) {
+  if (*actual != *expected) {
     t.Errorf("Get: expected %v, actual %v", expected, actual)
   }
 

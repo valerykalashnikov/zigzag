@@ -28,8 +28,10 @@ func Set(key string, value interface {},  m cache.Momenter) {
 }
 
 func Get(key string) (interface {}, bool) {
-  item, found := store.Get(key)
-  return item, found
+  if item, found := store.Get(key); found {
+    return item.Object, true
+  }
+  return nil, false
 }
 
 func Del(key string) {
