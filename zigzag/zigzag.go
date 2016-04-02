@@ -17,13 +17,6 @@ var once sync.Once
 // func (c *Clock) Duration() time.Duration { return time.Duration(c.ex) * time.Minute }
 
 func Set(key string, value interface {},  m cache.Momenter) {
-
-  once.Do(func() {
-      store = &cache.Cache{
-        Items: make(map[string]*cache.Item),
-      }
-  })
-
   store.Set(key, value, m)
 }
 
@@ -72,5 +65,13 @@ func DelRandomExpires(num int) int{
     i+=1
   }
   return expiresRemoved
+}
+
+func init() {
+  once.Do(func() {
+      store = &cache.Cache{
+        Items: make(map[string]*cache.Item),
+      }
+  })
 }
 

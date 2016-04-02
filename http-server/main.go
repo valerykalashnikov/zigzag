@@ -3,9 +3,12 @@ package main
 import (
     "log"
     "net/http"
+    "zigzag/jobs"
 )
 
 func main() {
+
+    go jobs.CleanCache()
 
     router := NewRouter()
 
