@@ -4,15 +4,18 @@ import (
     "log"
     "net/http"
     "zigzag/jobs"
+    "os"
 )
 
 func main() {
+  port, authToken := os.Getenv("ZIGZAG_PORT"), os.Getenv("ZIGZAG_AUTH")
+  if port == "" { port = "8082" }
 
-    go jobs.CleanCache()
+  go jobs.CleanCache(20)
 
-    router := NewRouter()
+  router := NewRouter(authToken)
 
-    log.Fatal(http.ListenAndServe(":8080", router))
+  log.Fatal(http.ListenAndServe(":" + port, router))
 }
 
 
