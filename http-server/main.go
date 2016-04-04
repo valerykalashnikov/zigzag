@@ -60,6 +60,19 @@ func handleInterruptSignal(wg sync.WaitGroup) {
   }()
 }
 
+func ImportCache(path string) {
+  if _, err := os.Stat(path); os.IsNotExist(err) {
+    fmt.Println(" - Nothing to import")
+    return
+  }
+  err := importers.ImportCacheFromFile(path)
+  if err != nil {
+    fmt.Println(err)
+    return
+  }
+  fmt.Println(" - Cache successfully imported")
+}
+
 func main() {
 
   port, authToken := os.Getenv("ZIGZAG_PORT"), os.Getenv("ZIGZAG_AUTH")
@@ -69,10 +82,7 @@ func main() {
   backupFilePath := os.Getenv("ZIGZAG_BACKUP_FILE")
   if backupFilePath != "" && os.Getenv("ZIGZAG_BACKUP_INTERVAL") != "" {
     fmt.Println("* Importing cache from ", backupFilePath)
-    err := importers.ImportCacheFromFile(backupFilePath)
-    if err != nil {
-      fmt.Println(err)
-    }
+    ImportCache(backupFilePath)
   }
 
   fmt.Println("* Running background jobs...")

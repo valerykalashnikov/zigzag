@@ -13,7 +13,6 @@ type FileImport struct{
 
 func (f *FileImport) Import() (map[string]*cache.Item, error) {
   items, err := persistence.RestoreFromFile(f.path)
-  
   return items, err
 
 }

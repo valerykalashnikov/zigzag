@@ -3,7 +3,6 @@ package main
 import (
           "net/http"
           "strings"
-          "fmt"
         )
 
 func Auth(handler http.Handler, zigzagToken string) http.Handler {
@@ -20,7 +19,6 @@ func Auth(handler http.Handler, zigzagToken string) http.Handler {
 
 func requestToken(r *http.Request) string {
   authStr := r.Header.Get("Authorization")
-  fmt.Println(authStr)
   if !strings.HasPrefix(authStr, "Token ") {
     return ""
   }
