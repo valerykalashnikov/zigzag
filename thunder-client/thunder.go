@@ -1,4 +1,4 @@
-package arrester
+package thunder
 
 import (
         "encoding/json"
