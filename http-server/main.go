@@ -11,6 +11,7 @@ import (
   "strconv"
 
   "zigzag/jobs"
+  "zigzag/importers"
 )
 
 var lightning = `
@@ -38,7 +39,6 @@ func runBackgroundJobs() sync.WaitGroup {
     period, err := strconv.Atoi(backupInterval)
 
     if err != nil { fmt.Println(err) }
-    if backupFilePath == "" { backupFilePath = "cache.zz" }
 
     go jobs.SaveToFile(wg, backupFilePath, period)
   }
@@ -65,6 +65,16 @@ func main() {
   port, authToken := os.Getenv("ZIGZAG_PORT"), os.Getenv("ZIGZAG_AUTH")
   if port == "" { port = "8082" }
   fmt.Print(lightning)
+
+  backupFilePath := os.Getenv("ZIGZAG_BACKUP_FILE")
+  if backupFilePath != "" && os.Getenv("ZIGZAG_BACKUP_INTERVAL") != "" {
+    fmt.Println("* Importing cache from ", backupFilePath)
+    err := importers.ImportCacheFromFile(backupFilePath)
+    if err != nil {
+      fmt.Println(err)
+    }
+  }
+
   fmt.Println("* Running background jobs...")
   wg := runBackgroundJobs()
 

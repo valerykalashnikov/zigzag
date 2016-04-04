@@ -9,6 +9,10 @@ var store *cache.Cache
 
 var once sync.Once
 
+type Importer interface {
+  Import() (map[string]*cache.Item, error)
+}
+
 // type Clock struct{
 //   ex int64
 // }
@@ -37,6 +41,13 @@ func Upd(key string, value interface {}) bool {
 
 func Keys(pattern string) []string {
   return store.Keys(pattern)
+}
+
+func ImportCache(i Importer) error {
+  items, err := i.Import()
+  if err != nil { return err }
+  store.Items = items
+  return nil
 }
 
 func GetCache() *cache.Cache{

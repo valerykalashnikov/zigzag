@@ -59,7 +59,7 @@ func Get(w http.ResponseWriter, r *http.Request) {
   key := getKey(r)
 
   if item, found := zigzag.Get(key); found {
-    w.WriteHeader(http.StatusCreated)
+    w.WriteHeader(http.StatusOK)
     if err := json.NewEncoder(w).Encode(item); err != nil {
         panic(err)
     }
