@@ -2,9 +2,10 @@ package jobs
 
 import (
         "time"
-        "zigzag/persistence"
-        "zigzag/zigzag"
         "sync"
+
+        "github.com/valerykalashnikov/zigzag/persistence"
+        "github.com/valerykalashnikov/zigzag/zigzag"
       )
 
 func SaveToFile(wg sync.WaitGroup, path string ,period int) {

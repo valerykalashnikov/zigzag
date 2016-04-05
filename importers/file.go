@@ -1,9 +1,9 @@
 package importers
 
 import (
-          "zigzag/cache"
-          "zigzag/zigzag"
-          "zigzag/persistence"
+          "github.com/valerykalashnikov/zigzag/cache"
+          "github.com/valerykalashnikov/zigzag/zigzag"
+          "github.com/valerykalashnikov/zigzag/persistence"
         )
 
 

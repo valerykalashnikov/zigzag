@@ -1,7 +1,7 @@
 package zigzag
 
 import (
-        "zigzag/cache"
+        "github.com/valerykalashnikov/zigzag/cache"
         "testing"
         "time"
         )

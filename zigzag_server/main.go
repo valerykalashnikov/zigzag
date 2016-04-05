@@ -10,8 +10,8 @@ import (
   "fmt"
   "strconv"
 
-  "zigzag/jobs"
-  "zigzag/importers"
+  "github.com/valerykalashnikov/zigzag/jobs"
+  "github.com/valerykalashnikov/zigzag/importers"
 )
 
 var lightning = `

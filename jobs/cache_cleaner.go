@@ -2,8 +2,9 @@ package jobs
 
 import (
         "time"
-        "zigzag/zigzag"
         "sync"
+
+        "github.com/valerykalashnikov/zigzag/zigzag"
       )
 
 func CleanCache(wg sync.WaitGroup, checkForExpirationItemNum int) {

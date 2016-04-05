@@ -4,7 +4,7 @@ package persistence
   "encoding/gob"
   "os"
 
-  "zigzag/cache"
+  "github.com/valerykalashnikov/zigzag/cache"
  )
 
 func SaveToFile(path string, data map[string]*cache.Item) error{

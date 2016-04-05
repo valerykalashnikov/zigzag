@@ -12,7 +12,7 @@ import (
   "strconv"
 
   "github.com/gorilla/mux"
-  "zigzag/zigzag"
+  "github.com/valerykalashnikov/zigzag/zigzag"
 )
 
 type Clock struct{
