@@ -5,9 +5,9 @@ ZigZag is an in-memory key:value store/cache similar to Redis that is suitable f
 
 ##You can use it as
 
-1.a thread-safe ```map[string]interface{}``` with expiration times without transmiting and serialization data over network
+1\. A thread-safe ```map[string]interface{}``` with expiration times without transmiting and serialization data over network
 ~~~go
-import "zigzag/zigaz"
+import "zigzag/zigzag"
 
 // Firstly you have to implement the structure to store ttl values
 // For example to store ttl values in minutes
@@ -35,14 +35,13 @@ zigzag.Upd(key, value)
 zigzag.Del(key)
 ~~~
 
-Important: ZigZag provides the function getting the n random items from the storage and checking it for expired items.
+*Important*: ZigZag provides the function getting the n random items from the storage and checking it for expired items.
 If expired items were more than 25% it will run again.
 Using running the passive expiration is up to you.
 ~~~go
   zigzag.DelRandomExpires(n)
 ~~~
-
-2.a data-structure storage with an JSON api.
+2\. A data-structure storage with an JSON api.
   Supported features:
   * JSON API
   * Active and passive values expiration
@@ -50,10 +49,9 @@ Using running the passive expiration is up to you.
   * Syncronization with disk
 
 ## How to install:
-* Land the code to the ```${GOPATH}/src```
-* ```cd to http-server```
-* ```go build -o zigzag-server```
-* ```./zigzag-server ```
+* ```go get -u github.com/valerykalashnikov/zigzag/zigzag_server```
+* ```zigzag_server```
+
 
 ## Supported options by setting proper env variables:
 
@@ -65,11 +63,11 @@ ZIGZAG_BACKUP_INTERVAL=interval_in_minutes
 # for example  ZIGZAG_BACKUP_FILE=2
 ~~~
 
-2. Authentication
+* Authentication
 ~~~bash
   ZIGZAG_AUTH=password
 ~~~
-3. Set port:
+* Set port:
 ~~~bash
   ZIGZAG_PORT=3000 # default 8082
 ~~~
