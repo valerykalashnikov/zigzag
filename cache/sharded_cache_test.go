@@ -6,16 +6,9 @@ import (
           "time"
         )
 
-var shardedCache ShardedCache;
-
-func setupSharded() {
-  shardedCache = NewShardedCache()
-}
-
-
 func TestShardedCacheSet(t *testing.T) {
   presentTime = &PresentTime{0}
-  setupSharded()
+  shardedCache := NewShardedCache()
   // when TTL is not defined
   var testsWithoutTTL = []struct {
     key    string
@@ -66,7 +59,7 @@ func TestShardedCacheSet(t *testing.T) {
 }
 
 func TestShardedCacheGet(t *testing.T) {
-  setupSharded()
+  shardedCache := NewShardedCache()
   // when ttl is not defined
   presentTime = &PresentTime{0}
   key := "key"
@@ -91,7 +84,7 @@ func TestShardedCacheGet(t *testing.T) {
   //when key is presented in storage but it is outdated
   ancientTime = &AncientTime{10}
   delete(shard.items, "key")
-  cache.Set(key, "value", ancientTime)
+  shardedCache.Set(key, "value", ancientTime)
   actual, found = shardedCache.Get(key)
   if (found == true) {
     t.Error("Get: Expired value shouldn't be returned, actual =", found)
@@ -99,7 +92,7 @@ func TestShardedCacheGet(t *testing.T) {
 }
 
 func TestShardedCacheUpd(t *testing.T) {
-  setupSharded()
+  shardedCache := NewShardedCache()
 
   //it shouldn't change expiration
   key :=   "key"
@@ -123,7 +116,7 @@ func TestShardedCacheUpd(t *testing.T) {
 }
 
 func TestShardedCacheDel(t *testing.T) {
-  setupSharded()
+  shardedCache := NewShardedCache()
 
   key := "key"
 
@@ -143,7 +136,7 @@ func TestShardedCacheDel(t *testing.T) {
 }
 
 func TestShardedCacheKeys(t *testing.T) {
-  setupSharded()
+  shardedCache := NewShardedCache()
 
   presentTime = &PresentTime{0}
   shardedCache.Set("adam[23]", "value", presentTime)

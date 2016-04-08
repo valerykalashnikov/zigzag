@@ -83,3 +83,9 @@ func (c *Cache) Keys(pattern string) []string {
   }
   return keys
 }
+
+func NewCache() *Cache {
+  return &Cache{
+    Items: make(map[string]*Item),
+  }
+}

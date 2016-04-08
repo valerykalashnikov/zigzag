@@ -5,7 +5,6 @@ import (
         "time"
         "testing"
         )
-var cache *Cache
 
 type AncientTime struct {
   duration time.Duration
@@ -32,15 +31,10 @@ var ancientTime *AncientTime
 
 var presentTime *PresentTime
 
-func setup() {
-  cache = &Cache{
-    Items: make(map[string]*Item),
-  }
-}
 
-func TestSet(t *testing.T) {
+func TestCacheSet(t *testing.T) {
 
-  setup()
+  cache := NewCache()
   // when TTL is not defined
   presentTime = &PresentTime{0}
   var testsWithoutTTL = []struct {
@@ -89,8 +83,8 @@ func TestSet(t *testing.T) {
 
 }
 
-func TestGet(t *testing.T) {
-  setup()
+func TestCacheGet(t *testing.T) {
+  cache := NewCache()
   // when ttl is not defined
   presentTime = &PresentTime{0}
   key := "key"
@@ -121,8 +115,8 @@ func TestGet(t *testing.T) {
   }
 }
 
-func TestUpd(t *testing.T) {
-  setup()
+func TestCacheUpd(t *testing.T) {
+  cache := NewCache()
 
   //it shouldn't change expiration
   key :=   "key"
@@ -143,8 +137,8 @@ func TestUpd(t *testing.T) {
 
 }
 
-func TestDel(t *testing.T) {
-  setup()
+func TestCacheDel(t *testing.T) {
+  cache := NewCache()
 
   key := "key"
 
@@ -163,8 +157,8 @@ func TestDel(t *testing.T) {
 
 }
 
-func TestKeys(t *testing.T) {
-  setup()
+func TestCacheKeys(t *testing.T) {
+  cache := NewCache()
 
   presentTime = &PresentTime{0}
   cache.Set("adam[23]", "value", presentTime)

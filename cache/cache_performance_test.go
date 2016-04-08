@@ -4,8 +4,8 @@ import (
         "testing"
         )
 
-func BenchmarkSetStringTest(b *testing.B) {
-  setup()
+func BenchmarkCacheSetStringTest(b *testing.B) {
+  cache := NewCache()
   presentTime = &PresentTime{0}
   // run the Set function b.N times
   for n := 0; n < b.N; n++ {
@@ -13,8 +13,8 @@ func BenchmarkSetStringTest(b *testing.B) {
   }
 }
 
-func BenchmarkSetListTest(b *testing.B) {
-  setup()
+func BenchmarkCacheSetListTest(b *testing.B) {
+  cache := NewCache()
   presentTime = &PresentTime{0}
   value := [2]string{"Penn", "Teller"}
   // run the Set function b.N times
@@ -23,8 +23,8 @@ func BenchmarkSetListTest(b *testing.B) {
   }
 }
 
-func BenchmarkSetMapTest(b *testing.B) {
-  setup()
+func BenchmarkCacheSetMapTest(b *testing.B) {
+  cache := NewCache()
   presentTime = &PresentTime{0}
   value := map[string]int{"rsc": 3711, "r": 2138}
   // run the Set function b.N times
@@ -34,8 +34,8 @@ func BenchmarkSetMapTest(b *testing.B) {
 }
 
 
-func BenchmarkGetValueTest(b *testing.B) {
-  setup()
+func BenchmarkCacheGetValueTest(b *testing.B) {
+  cache := NewCache()
   presentTime = &PresentTime{0}
   value := "value"
   cache.Set("key", value, presentTime)
@@ -45,8 +45,8 @@ func BenchmarkGetValueTest(b *testing.B) {
 }
 
 
-func BenchmarkUpdateValueTest(b *testing.B) {
-  setup()
+func BenchmarkCacheUpdateValueTest(b *testing.B) {
+  cache := NewCache()
   presentTime = &PresentTime{0}
   value := "New value"
   cache.Set("key", value, presentTime)
@@ -55,8 +55,8 @@ func BenchmarkUpdateValueTest(b *testing.B) {
   }
 }
 
-func BenchmarkDeleteValueTest(b *testing.B) {
-  setup()
+func BenchmarkCacheDeleteValueTest(b *testing.B) {
+  cache := NewCache()
   presentTime = &PresentTime{0}
   for i := 0; i < 10000; i++ {
     cache.Set("key", i, presentTime)
@@ -66,8 +66,8 @@ func BenchmarkDeleteValueTest(b *testing.B) {
   }
 }
 
-func BenchmarkKeysValueTest(b *testing.B) {
-  setup()
+func BenchmarkCacheKeysValueTest(b *testing.B) {
+  cache := NewCache()
   presentTime = &PresentTime{0}
   for i := 0; i < 10000; i++ {
     cache.Set("key", i, presentTime)
