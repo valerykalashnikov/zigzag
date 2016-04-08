@@ -7,7 +7,7 @@ ZigZag is an in-memory key:value store/cache similar to Redis that is suitable f
 
 1\. A thread-safe ```map[string]interface{}``` with expiration times without transmiting and serialization data over network
 ~~~go
-import "zigzag/zigzag"
+import "github.com/valerykalashnikov/zigzag/zigzag"
 
 // Firstly you have to implement the structure to store ttl values
 // For example to store ttl values in minutes
