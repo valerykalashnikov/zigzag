@@ -33,9 +33,9 @@ func TestShardedCacheSet(t *testing.T) {
   }
   for _, tt := range testsWithoutTTL {
     shardedCache.Set(tt.key, tt.value, presentTime)
-    shard := shardedCache.GetShard(tt.key)
+    // shard := shardedCache.GetShard(tt.key)
 
-    actual := shard.items[tt.key]
+    actual, _ := shardedCache.Get(tt.key)
     if !reflect.DeepEqual(actual, tt.expected) {
       t.Errorf("Set: expected %v, actual %v", tt.expected, actual)
     }
@@ -47,14 +47,13 @@ func TestShardedCacheSet(t *testing.T) {
   duration := time.Duration(ex) * time.Minute
   ancientTime = &AncientTime{duration}
   shardedCache.Set(key, value, ancientTime)
-  shard := shardedCache.GetShard(key)
 
-  actual := shard.items[key]
+  actual, _ := shardedCache.Get(key)
   if actual.ExpireAt == 0 {
-    t.Errorf("Set: ExpireAt should be greater than nil")
+    t.Error("Set: ExpireAt should be greater than nil")
   }
   if actual.ExpireAt != ancientTime.Now().Add(duration).UnixNano() {
-    t.Errorf("Set: ExpireAt should be now + duration")
+    t.Error("Set: ExpireAt should be now + duration")
   }
 }
 
@@ -72,9 +71,9 @@ func TestShardedCacheGet(t *testing.T) {
     t.Errorf("Get: expected %v, actual %v", expected, actual)
   }
   //when key is not present in storage
-  shard := shardedCache.GetShard(key)
+  // shard := shardedCache.GetShard(key)
 
-  delete(shard.items, "key")
+  shardedCache.Del("key")
 
   actual, found := shardedCache.Get(key)
   if (found != false) {
@@ -83,11 +82,11 @@ func TestShardedCacheGet(t *testing.T) {
 
   //when key is presented in storage but it is outdated
   ancientTime = &AncientTime{10}
-  delete(shard.items, "key")
+  shardedCache.Del("key")
   shardedCache.Set(key, "value", ancientTime)
   actual, found = shardedCache.Get(key)
-  if (found == true) {
-    t.Error("Get: Expired value shouldn't be returned, actual =", found)
+  if (!actual.Expired()) {
+    t.Error("Get: Returned value should be expired")
   }
 }
 
@@ -105,9 +104,9 @@ func TestShardedCacheUpd(t *testing.T) {
   shardedCache.Set(key, value, ancientTime)
   expectedValue := "newValue"
   shardedCache.Upd(key, expectedValue)
-  shard := shardedCache.GetShard(key)
 
-  actualValue := shard.items[key].Object
+  actual, _ := shardedCache.Get(key)
+  actualValue := actual.Object
 
   if (actualValue != expectedValue) {
     t.Errorf("Upd: Object should be changed, expect %v, actual %v", expectedValue, actualValue)

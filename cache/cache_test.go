@@ -60,7 +60,7 @@ func TestCacheSet(t *testing.T) {
   }
   for _, tt := range testsWithoutTTL {
     cache.Set(tt.key, tt.value, presentTime)
-    actual := cache.Items[tt.key]
+    actual, _ := cache.Get(tt.key)
     if !reflect.DeepEqual(actual, tt.expected) {
       t.Errorf("Set: expected %v, actual %v", tt.expected, actual)
     }
@@ -73,7 +73,7 @@ func TestCacheSet(t *testing.T) {
   duration := time.Duration(ex) * time.Minute
   ancientTime = &AncientTime{duration}
   cache.Set(key, value, ancientTime)
-  actual := cache.Items[key]
+  actual, _ := cache.Get(key)
   if actual.ExpireAt == 0 {
     t.Errorf("Set: ExpireAt should be greater than nil")
   }
@@ -98,7 +98,7 @@ func TestCacheGet(t *testing.T) {
   }
 
   //when key is not present in storage
-  delete(cache.Items, "key")
+  cache.Del("key")
 
   actual, found := cache.Get(key)
   if (found != false) {
@@ -107,11 +107,11 @@ func TestCacheGet(t *testing.T) {
 
   //when key is presented in storage but it is outdated
   ancientTime = &AncientTime{10}
-  delete(cache.Items, "key")
+  cache.Del("key")
   cache.Set(key, "value", ancientTime)
   actual, found = cache.Get(key)
-  if (found == true) {
-    t.Error("Get: Expired value shouldn't be returned, actual =", found)
+  if (!actual.Expired()) {
+    t.Error("Get: Returned value should be expired")
   }
 }
 
@@ -129,8 +129,8 @@ func TestCacheUpd(t *testing.T) {
   cache.Set(key, value, ancientTime)
   expectedValue := "newValue"
   cache.Upd(key, expectedValue)
-  actualValue := cache.Items[key].Object
-
+  actual, _ := cache.Get(key)
+  actualValue := actual.Object
   if (actualValue != expectedValue) {
     t.Errorf("Upd: Object should be changed, expect %v, actual %v", expectedValue, actualValue)
   }

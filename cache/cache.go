@@ -22,7 +22,7 @@ func (i *Item) Expired() bool {
 }
 
 type Cache struct {
-  Items map[string]*Item
+  items map[string]*Item
   mux   sync.RWMutex
 }
 
@@ -33,7 +33,7 @@ func (c *Cache) Set(key string, value interface {}, moment Momenter) {
     expireAt = moment.Now().Add(duration).UnixNano()
   }
   c.mux.Lock()
-  c.Items[key] = &Item{
+  c.items[key] = &Item{
     Object:   value,
     ExpireAt: expireAt,
   }
@@ -43,23 +43,16 @@ func (c *Cache) Set(key string, value interface {}, moment Momenter) {
 func (c *Cache) Get(key string) (*Item, bool)  {
   if c == nil { return nil, false }
   c.mux.RLock()
-  v, ok := c.Items[key]
+  item, ok := c.items[key]
   c.mux.RUnlock()
-  if ok {
-    expired := v.Expired()
-    if expired {
-      return nil, false
-    } else {
-      return v, true
-    }
-  }
+  if ok { return item, true }
 
   return nil, false
 }
 
 func (c *Cache) Upd(key string, newValue interface {}) bool {
   // it saves TTL
-  item, found := c.Items[key]
+  item, found := c.items[key]
   if !found {return false}
   c.mux.Lock()
   item.Object = newValue
@@ -69,14 +62,14 @@ func (c *Cache) Upd(key string, newValue interface {}) bool {
 
 func (c *Cache) Del(key string) {
   c.mux.Lock()
-  delete(c.Items, key)
+  delete(c.items, key)
   c.mux.Unlock()
 }
 
 func (c *Cache) Keys(pattern string) []string {
-  keys := make([]string, 0, len(c.Items))
+  keys := make([]string, 0, len(c.items))
   var validKey = regexp.MustCompile(pattern)
-  for k := range c.Items {
+  for k := range c.items {
       if validKey.MatchString(k) {
         keys = append(keys, k)
       }
@@ -84,8 +77,8 @@ func (c *Cache) Keys(pattern string) []string {
   return keys
 }
 
-func NewCache() *Cache {
+func NewCache() DataStore {
   return &Cache{
-    Items: make(map[string]*Item),
+    items: make(map[string]*Item),
   }
 }

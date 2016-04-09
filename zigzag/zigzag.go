@@ -13,12 +13,6 @@ type Importer interface {
   Import() (map[string]*cache.Item, error)
 }
 
-// type Clock struct{
-//   ex int64
-// }
-
-// func (c *Clock) Now() time.Time { return time.Now() }
-// func (c *Clock) Duration() time.Duration { return time.Duration(c.ex) * time.Minute }
 
 func Set(key string, value interface {},  m cache.Momenter) {
   store.Set(key, value, m)

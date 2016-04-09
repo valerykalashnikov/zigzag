@@ -20,7 +20,7 @@ func (c ShardedCache) Set(key string, value interface {}, moment Momenter) {
   if duration != 0 {
     expireAt = moment.Now().Add(duration).UnixNano()
   }
-  shard := c.GetShard(key)
+  shard := c.getShard(key)
   shard.mux.Lock()
   defer shard.mux.Unlock()
   shard.items[key] = &Item{
@@ -30,25 +30,17 @@ func (c ShardedCache) Set(key string, value interface {}, moment Momenter) {
 }
 
 func (c ShardedCache) Get(key string) (*Item, bool) {
-  shard := c.GetShard(key)
+  shard := c.getShard(key)
   shard.mux.RLock()
   defer shard.mux.RUnlock()
 
-  v, ok := shard.items[key]
-  if ok {
-    expired := v.Expired()
-    if expired {
-      return nil, false
-    } else {
-      return v, true
-    }
-  }
+  if item, ok := shard.items[key]; ok { return item, true }
   return nil, false
 }
 
 func (c ShardedCache) Upd(key string, newValue interface {}) bool {
   // it saves TTL
-  shard := c.GetShard(key)
+  shard := c.getShard(key)
   shard.mux.Lock()
   defer shard.mux.Unlock()
   item, found := shard.items[key]
@@ -58,7 +50,7 @@ func (c ShardedCache) Upd(key string, newValue interface {}) bool {
 }
 
 func (c ShardedCache) Del(key string) {
-  shard := c.GetShard(key)
+  shard := c.getShard(key)
   shard.mux.Lock()
   defer shard.mux.Unlock()
   delete(shard.items, key)
@@ -79,7 +71,7 @@ func (c ShardedCache) Keys(pattern string) []string{
   return keys
 }
 
-func (c ShardedCache) GetShard(key string) *CacheShard {
+func (c ShardedCache) getShard(key string) *CacheShard {
   hasher := sha1.New()
   hasher.Write([]byte(key))
   shardKey :=  fmt.Sprintf("%x", hasher.Sum(nil))[0:2]
@@ -87,7 +79,7 @@ func (c ShardedCache) GetShard(key string) *CacheShard {
 }
 
 
-func NewShardedCache() ShardedCache {
+func NewShardedCache() DataStore {
   c := make(ShardedCache, 256)
   for i := 0; i < 256; i++ {
     c[fmt.Sprintf("%02x", i)] = &CacheShard{
