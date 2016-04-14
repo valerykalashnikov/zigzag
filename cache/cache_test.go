@@ -182,6 +182,26 @@ func TestCacheKeys(t *testing.T) {
   }
 }
 
+func TestCacheItems(t *testing.T) {
+  cache := NewShardedCache()
+  presentTime = &PresentTime{0}
+  cache.Set("adam[23]", "value1", presentTime)
+  cache.Set("eve[7]", "value2", presentTime)
+  items := cache.Items()
+
+  if _, ok := items["adam[23]"]; !ok {
+    t.Error("Items: items should contain 'adam[23]' key")
+  }
+
+  if _, ok := items["eve[7]"]; !ok {
+    t.Error("Items: items should contain 'eve[7]' key")
+  }
+
+  if (len(items) != 2) {
+    t.Errorf("Items: length of items should be 2, got: %v", len(items))
+  }
+}
+
 
 func stringInSlice(a string, list []string) bool {
     for _, b := range list {

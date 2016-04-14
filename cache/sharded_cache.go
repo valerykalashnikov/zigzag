@@ -71,6 +71,16 @@ func (c ShardedCache) Keys(pattern string) []string{
   return keys
 }
 
+func (c ShardedCache) Items() map[string]*Item {
+  results:=  make(map[string]*Item)
+  for _, shard := range c {
+    for key, item := range shard.items {
+      results[key] = item
+    }
+  }
+  return results
+}
+
 func (c ShardedCache) getShard(key string) *CacheShard {
   hasher := sha1.New()
   hasher.Write([]byte(key))

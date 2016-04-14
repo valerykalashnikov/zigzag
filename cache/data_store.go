@@ -6,4 +6,5 @@ type DataStore interface {
   Upd(key string, newValue interface {}) bool
   Del(key string)
   Keys(pattern string) []string
+  Items() map[string]*Item
 }

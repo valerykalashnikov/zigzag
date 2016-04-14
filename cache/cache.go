@@ -77,6 +77,10 @@ func (c *Cache) Keys(pattern string) []string {
   return keys
 }
 
+func (c *Cache) Items() map[string]*Item {
+  return c.items
+}
+
 func NewCache() DataStore {
   return &Cache{
     items: make(map[string]*Item),

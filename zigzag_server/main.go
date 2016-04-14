@@ -10,6 +10,7 @@ import (
   "fmt"
   "strconv"
 
+  "github.com/valerykalashnikov/zigzag/zigzag"
   "github.com/valerykalashnikov/zigzag/jobs"
   "github.com/valerykalashnikov/zigzag/importers"
 )
@@ -28,7 +29,7 @@ var lightning = `
      /z
 `
 
-func runBackgroundJobs() sync.WaitGroup {
+func runBackgroundJobs(db *zigzag.DB) sync.WaitGroup {
   var wg sync.WaitGroup
 
   backupFilePath := os.Getenv("ZIGZAG_BACKUP_FILE")
@@ -40,10 +41,10 @@ func runBackgroundJobs() sync.WaitGroup {
 
     if err != nil { fmt.Println(err) }
 
-    go jobs.SaveToFile(wg, backupFilePath, period)
+    go jobs.SaveToFile(wg, db, backupFilePath, period)
   }
 
-  go jobs.CleanCache(wg, 20)
+  go jobs.CleanCache(wg, db, 20)
 
   return wg
 }
@@ -60,16 +61,15 @@ func handleInterruptSignal(wg sync.WaitGroup) {
   }()
 }
 
-func ImportCache(path string) {
+func ImportCache(db *zigzag.DB, path string) {
+
   if _, err := os.Stat(path); os.IsNotExist(err) {
     fmt.Println(" - Nothing to import")
     return
   }
-  err := importers.ImportCacheFromFile(path)
-  if err != nil {
-    fmt.Println(err)
-    return
-  }
+
+  importers.FileImport(db, path)
+
   fmt.Println(" - Cache successfully imported")
 }
 
@@ -79,18 +79,25 @@ func main() {
   if port == "" { port = "8082" }
   fmt.Print(lightning)
 
+  engineType := os.Getenv("ZIGZAG_ENGINE_TYPE")
+  if engineType == "" { engineType = "cache" }
+
+  db, err := zigzag.New(engineType)
+  if err != nil {panic(err)}
+  fmt.Println(" - Engine type:", engineType)
+
   backupFilePath := os.Getenv("ZIGZAG_BACKUP_FILE")
   if backupFilePath != "" && os.Getenv("ZIGZAG_BACKUP_INTERVAL") != "" {
     fmt.Println("* Importing cache from ", backupFilePath)
-    ImportCache(backupFilePath)
+    ImportCache(db, backupFilePath)
   }
 
   fmt.Println("* Running background jobs...")
-  wg := runBackgroundJobs()
+  wg := runBackgroundJobs(db)
 
   handleInterruptSignal(wg)
 
-  router := NewRouter(authToken)
+  router := NewRouter(authToken, db)
   fmt.Println("* Listening on http://localhost:" + port)
   log.Fatal(http.ListenAndServe(":" + port, router))
 }

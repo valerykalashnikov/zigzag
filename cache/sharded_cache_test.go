@@ -158,3 +158,23 @@ func TestShardedCacheKeys(t *testing.T) {
     t.Errorf("Keys: length of keys should be 2, got: %v", len(keys))
   }
 }
+
+func TestShardedCacheItems(t *testing.T) {
+  shardedCache := NewShardedCache()
+  presentTime = &PresentTime{0}
+  shardedCache.Set("adam[23]", "value1", presentTime)
+  shardedCache.Set("eve[7]", "value2", presentTime)
+  items := shardedCache.Items()
+
+  if _, ok := items["adam[23]"]; !ok {
+    t.Error("Items: items should contain 'adam[23]' key")
+  }
+
+  if _, ok := items["eve[7]"]; !ok {
+    t.Error("Items: items should contain 'eve[7]' key")
+  }
+
+  if (len(items) != 2) {
+    t.Errorf("Items: length of items should be 2, got: %v", len(items))
+  }
+}
