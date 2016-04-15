@@ -3,7 +3,7 @@ package cache
 import (
           "fmt"
           "sync"
-          "crypto/sha1"
+          "hash/fnv"
           "regexp"
         )
 
@@ -82,7 +82,7 @@ func (c ShardedCache) Items() map[string]*Item {
 }
 
 func (c ShardedCache) getShard(key string) *CacheShard {
-  hasher := sha1.New()
+  hasher := fnv.New64()
   hasher.Write([]byte(key))
   shardKey :=  fmt.Sprintf("%x", hasher.Sum(nil))[0:2]
   return c[shardKey]
