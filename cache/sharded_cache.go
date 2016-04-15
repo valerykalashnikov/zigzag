@@ -3,9 +3,26 @@ package cache
 import (
           "fmt"
           "sync"
-          "hash/fnv"
+          "bytes"
+          farm "github.com/dgryski/go-farm"
           "regexp"
         )
+
+type FarmHash struct {
+    buf bytes.Buffer
+}
+
+func (f *FarmHash) Write(p []byte) (n int, err error) {
+    return f.buf.Write(p)
+}
+
+func (f *FarmHash) Reset() {
+    f.buf.Reset()
+}
+
+func (f *FarmHash) Sum64() uint64 {
+    return farm.Hash64(f.buf.Bytes())
+}
 
 type ShardedCache map[string]*CacheShard
 
@@ -82,9 +99,9 @@ func (c ShardedCache) Items() map[string]*Item {
 }
 
 func (c ShardedCache) getShard(key string) *CacheShard {
-  hasher := fnv.New64()
+  hasher := &FarmHash{}
   hasher.Write([]byte(key))
-  shardKey :=  fmt.Sprintf("%x", hasher.Sum(nil))[0:2]
+  shardKey :=  fmt.Sprintf("%x", hasher.Sum64())[0:2]
   return c[shardKey]
 }
 
