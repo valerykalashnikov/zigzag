@@ -8,7 +8,7 @@ import (
   "net/url"
   "io"
   "io/ioutil"
-
+  "errors"
   "strconv"
 
   "github.com/gorilla/mux"
@@ -22,11 +22,12 @@ type Clock struct{
 func (c *Clock) Now() time.Time { return time.Now() }
 func (c *Clock) Duration() time.Duration { return time.Duration(c.ex) * time.Minute }
 
-func Index(w http.ResponseWriter, r *http.Request) {
+func Index(db *zigzag.DB, w http.ResponseWriter, r *http.Request) (int, error) {
   fmt.Fprintln(w, "ZigZag server!")
+  return http.StatusOK, nil
 }
 
-func Set(w http.ResponseWriter, r *http.Request) {
+func Set(db *zigzag.DB, w http.ResponseWriter, r *http.Request) (int, error) {
   var value interface {}
   var ex int64
 
@@ -38,7 +39,7 @@ func Set(w http.ResponseWriter, r *http.Request) {
   if err != nil {
     w.WriteHeader(422) // unprocessable entity
     fmt.Fprintf(w, "Error: Invalid expiration value")
-    return
+    return 422, err
   }
 
   body, err := requestBody(r);
@@ -46,29 +47,32 @@ func Set(w http.ResponseWriter, r *http.Request) {
 
   if err := json.Unmarshal(body, &value); err != nil {
     respondWithParsingJsonError(w, err)
+    return 422, err
   }
 
-  zigzag.Set(key, value, &Clock{ex})
+  db.Set(key, value, &Clock{ex})
 
   w.WriteHeader(http.StatusOK)
+  return http.StatusOK, nil
 }
 
-func Get(w http.ResponseWriter, r *http.Request) {
+func Get(db *zigzag.DB, w http.ResponseWriter, r *http.Request) (int, error) {
   w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
   key := getKey(r)
 
-  if item, found := zigzag.Get(key); found {
+  if item, found := db.Get(key); found {
     w.WriteHeader(http.StatusOK)
     if err := json.NewEncoder(w).Encode(item); err != nil {
         panic(err)
     }
-    return
+    return http.StatusOK, nil
   }
   w.WriteHeader(http.StatusNotFound)
+  return http.StatusNotFound, errors.New("Not found")
 }
 
-func Update(w http.ResponseWriter, r *http.Request) {
+func Update(db *zigzag.DB, w http.ResponseWriter, r *http.Request) (int, error) {
   var value interface {}
 
   w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -80,38 +84,41 @@ func Update(w http.ResponseWriter, r *http.Request) {
 
   if err := json.Unmarshal(body, &value); err != nil {
     respondWithParsingJsonError(w, err)
-    return
+    return 422, err
   }
 
-  if ok := zigzag.Upd(key, value); ok {
+  if ok := db.Upd(key, value); ok {
     w.WriteHeader(http.StatusOK)
-    return
+    return http.StatusOK, nil
   }
 
   w.WriteHeader(http.StatusNotFound)
+  return http.StatusNotFound, errors.New("Not found")
 
 }
 
-func Delete(w http.ResponseWriter, r *http.Request) {
+func Delete(db *zigzag.DB, w http.ResponseWriter, r *http.Request) (int, error)  {
   key := getKey(r)
   w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-  zigzag.Del(key)
+  db.Del(key)
   w.WriteHeader(http.StatusOK)
+  return http.StatusOK, nil
 }
 
-func Keys(w http.ResponseWriter, r *http.Request) {
+func Keys(db *zigzag.DB, w http.ResponseWriter, r *http.Request) (int, error)  {
   vars := mux.Vars(r)
   escapedPattern := vars["pattern"]
   pattern, err := url.QueryUnescape(escapedPattern)
   if (err != nil) {
     w.WriteHeader(422) // unprocessable entity
     fmt.Fprintf(w, "Error: Invalid pattern")
-    return
+    return 422, err
   }
-  keys := zigzag.Keys(pattern)
+  keys := db.Keys(pattern)
   if err := json.NewEncoder(w).Encode(keys); err != nil {
     panic(err)
   }
+  return http.StatusOK, nil
 }
 
 func getExpiration(query url.Values) (int64, error) {

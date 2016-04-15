@@ -1,42 +1,15 @@
 package cache
 
 import (
-        "reflect"
-        "time"
-        "testing"
+          "testing"
+          "reflect"
+          "time"
         )
 
-type AncientTime struct {
-  duration time.Duration
-}
-
-func (c *AncientTime) Now() time.Time {
-  const longForm = "Jan 2, 2006 at 3:04pm (MST)"
-  t, _ := time.Parse(longForm, "Feb 3, 2013 at 7:54pm (PST)")
-  return t
-}
-func (c *AncientTime) Duration() time.Duration { return c.duration }
-
-
-type PresentTime struct {
-  duration time.Duration
-}
-
-func (c *PresentTime) Now() time.Time {
-  return time.Now()
-}
-func (c *PresentTime) Duration() time.Duration { return c.duration }
-
-var ancientTime *AncientTime
-
-var presentTime *PresentTime
-
-
-func TestCacheSet(t *testing.T) {
-
-  cache := NewCache()
-  // when TTL is not defined
+func TestShardedCacheSet(t *testing.T) {
   presentTime = &PresentTime{0}
+  shardedCache := NewShardedCache()
+  // when TTL is not defined
   var testsWithoutTTL = []struct {
     key    string
     value    interface {}
@@ -59,64 +32,66 @@ func TestCacheSet(t *testing.T) {
     },
   }
   for _, tt := range testsWithoutTTL {
-    cache.Set(tt.key, tt.value, presentTime)
-    actual, _ := cache.Get(tt.key)
+    shardedCache.Set(tt.key, tt.value, presentTime)
+    // shard := shardedCache.GetShard(tt.key)
+
+    actual, _ := shardedCache.Get(tt.key)
     if !reflect.DeepEqual(actual, tt.expected) {
       t.Errorf("Set: expected %v, actual %v", tt.expected, actual)
     }
   }
 
-  //when TTL is defined
   ex := int64(30)
   key :=   "key"
   value := "value"
   duration := time.Duration(ex) * time.Minute
   ancientTime = &AncientTime{duration}
-  cache.Set(key, value, ancientTime)
-  actual, _ := cache.Get(key)
+  shardedCache.Set(key, value, ancientTime)
+
+  actual, _ := shardedCache.Get(key)
   if actual.ExpireAt == 0 {
-    t.Errorf("Set: ExpireAt should be greater than nil")
+    t.Error("Set: ExpireAt should be greater than nil")
   }
   if actual.ExpireAt != ancientTime.Now().Add(duration).UnixNano() {
-    t.Errorf("Set: ExpireAt should be now + duration")
+    t.Error("Set: ExpireAt should be now + duration")
   }
-
 }
 
-func TestCacheGet(t *testing.T) {
-  cache := NewCache()
+func TestShardedCacheGet(t *testing.T) {
+  shardedCache := NewShardedCache()
   // when ttl is not defined
   presentTime = &PresentTime{0}
   key := "key"
   expected := &Item{"value", 0}
 
-  cache.Set(key, "value", presentTime)
-  actual, _ := cache.Get(key)
+  shardedCache.Set(key, "value", presentTime)
+  actual, _ := shardedCache.Get(key)
 
   if (*actual != *expected) {
     t.Errorf("Get: expected %v, actual %v", expected, actual)
   }
-
   //when key is not present in storage
-  cache.Del("key")
+  // shard := shardedCache.GetShard(key)
 
-  actual, found := cache.Get(key)
+  shardedCache.Del("key")
+
+  actual, found := shardedCache.Get(key)
   if (found != false) {
     t.Error("Get: expected false while returning empty value, found flag is", found)
   }
 
   //when key is presented in storage but it is outdated
   ancientTime = &AncientTime{10}
-  cache.Del("key")
-  cache.Set(key, "value", ancientTime)
-  actual, found = cache.Get(key)
+  shardedCache.Del("key")
+  shardedCache.Set(key, "value", ancientTime)
+  actual, found = shardedCache.Get(key)
   if (!actual.Expired()) {
     t.Error("Get: Returned value should be expired")
   }
 }
 
-func TestCacheUpd(t *testing.T) {
-  cache := NewCache()
+func TestShardedCacheUpd(t *testing.T) {
+  shardedCache := NewShardedCache()
 
   //it shouldn't change expiration
   key :=   "key"
@@ -126,30 +101,32 @@ func TestCacheUpd(t *testing.T) {
   duration := time.Duration(ex) * time.Minute
   ancientTime = &AncientTime{duration}
 
-  cache.Set(key, value, ancientTime)
+  shardedCache.Set(key, value, ancientTime)
   expectedValue := "newValue"
-  cache.Upd(key, expectedValue)
-  actual, _ := cache.Get(key)
+  shardedCache.Upd(key, expectedValue)
+
+  actual, _ := shardedCache.Get(key)
   actualValue := actual.Object
+
   if (actualValue != expectedValue) {
     t.Errorf("Upd: Object should be changed, expect %v, actual %v", expectedValue, actualValue)
   }
 
 }
 
-func TestCacheDel(t *testing.T) {
-  cache := NewCache()
+func TestShardedCacheDel(t *testing.T) {
+  shardedCache := NewShardedCache()
 
   key := "key"
 
   expected := false
 
   presentTime = &PresentTime{0}
-  cache.Set(key, "value", presentTime)
+  shardedCache.Set(key, "value", presentTime)
 
-  cache.Del(key)
+  shardedCache.Del(key)
 
-  _, found := cache.Get(key)
+  _, found := shardedCache.Get(key)
 
   if (found != expected) {
     t.Errorf("Get: expected %v, actual %v", expected, found)
@@ -157,18 +134,18 @@ func TestCacheDel(t *testing.T) {
 
 }
 
-func TestCacheKeys(t *testing.T) {
-  cache := NewCache()
+func TestShardedCacheKeys(t *testing.T) {
+  shardedCache := NewShardedCache()
 
   presentTime = &PresentTime{0}
-  cache.Set("adam[23]", "value", presentTime)
-  cache.Set("eve[7]", "value", presentTime)
-  cache.Set("Job[48]", "value", presentTime)
-  cache.Set("snakey", "value", presentTime)
+  shardedCache.Set("adam[23]", "value", presentTime)
+  shardedCache.Set("eve[7]", "value", presentTime)
+  shardedCache.Set("Job[48]", "value", presentTime)
+  shardedCache.Set("snakey", "value", presentTime)
 
   pattern := "^[a-z]+[[0-9]+]$"
 
-  keys := cache.Keys(pattern)
+  keys := shardedCache.Keys(pattern)
 
   if (!stringInSlice("adam[23]", keys)) {
     t.Errorf("Keys: expect %v, got %v", "adam[23]", keys[0])
@@ -178,16 +155,16 @@ func TestCacheKeys(t *testing.T) {
   }
 
   if (len(keys) != 2) {
-    t.Error("Keys: length of keys should be 2")
+    t.Errorf("Keys: length of keys should be 2, got: %v", len(keys))
   }
 }
 
-func TestCacheItems(t *testing.T) {
-  cache := NewShardedCache()
+func TestShardedCacheItems(t *testing.T) {
+  shardedCache := NewShardedCache()
   presentTime = &PresentTime{0}
-  cache.Set("adam[23]", "value1", presentTime)
-  cache.Set("eve[7]", "value2", presentTime)
-  items := cache.Items()
+  shardedCache.Set("adam[23]", "value1", presentTime)
+  shardedCache.Set("eve[7]", "value2", presentTime)
+  items := shardedCache.Items()
 
   if _, ok := items["adam[23]"]; !ok {
     t.Error("Items: items should contain 'adam[23]' key")
@@ -200,14 +177,4 @@ func TestCacheItems(t *testing.T) {
   if (len(items) != 2) {
     t.Errorf("Items: length of items should be 2, got: %v", len(items))
   }
-}
-
-
-func stringInSlice(a string, list []string) bool {
-    for _, b := range list {
-        if b == a {
-            return true
-        }
-    }
-    return false
 }

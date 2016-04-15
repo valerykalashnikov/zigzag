@@ -1,24 +1,23 @@
 package importers
 
 import (
-          "github.com/valerykalashnikov/zigzag/cache"
+          "time"
           "github.com/valerykalashnikov/zigzag/zigzag"
           "github.com/valerykalashnikov/zigzag/persistence"
         )
 
-
-type FileImport struct{
-  path string
+type ClockForImport struct{
+  duration int64
 }
 
-func (f *FileImport) Import() (map[string]*cache.Item, error) {
-  items, err := persistence.RestoreFromFile(f.path)
-  return items, err
+func (c *ClockForImport) Now() time.Time { return time.Now() }
+func (c *ClockForImport) Duration() time.Duration { return time.Duration(c.duration) }
 
-}
-
-
-func ImportCacheFromFile(path string) error {
-  err := zigzag.ImportCache(&FileImport{path: path})
-  return err
+func FileImport(db *zigzag.DB, path string) error {
+  items, err := persistence.RestoreFromFile(path)
+  if err != nil {return err}
+  for key, item := range items {
+    db.Set(key, item.Object, &ClockForImport{item.ExpireAt})
+  }
+  return nil
 }
