@@ -8,7 +8,7 @@ ZigZag is a golang implementation of in-memory key:value store/cache similar to 
 ZigZag supports two types of storage:
 
 1. Simple storage - requires less resources but is locked at each operation in concurrent mode.
-2. Sharded cache - requires more resources but allows to reduce amount of locks in concurrent mode.
+2. Experimental support of sharded cache (now it is slowler than simple cache) - requires more resources but allows to reduce amount of locks in concurrent mode.
 
 ##You can use it as
 
