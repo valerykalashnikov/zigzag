@@ -70,8 +70,18 @@ Using running the passive expiration is up to you.
   * Syncronization with disk
 
 ## How to install:
+
+### Build from source
 * ```go get -u github.com/valerykalashnikov/zigzag/zigzag_server```
 * ```zigzag_server```
+
+### Using Docker
+
+* ```docker pull valerykalashnikov/zigzag```
+* ```docker run -d -p 8082:8082 --name zigzag_server valerykalashnikov/zigzag```
+* Use options pointed below using ```-e``` parameter, for example:  
+```docker run -d -e ZIGZAG_AUTH=password -p 8082:8082 --name zigzag_server valerykalashnikov/zigzag```
+
 
 
 ## Supported options by setting proper env variables:
