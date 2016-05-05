@@ -25,7 +25,7 @@ func NewRouter(authToken string, db *zigzag.DB) *mux.Router {
   for _, route := range routes {
     var handler http.Handler
     handler = AppHandler{db, route.HandlerFunc}
-    handler = Auth(Logger(handler, route.Name), authToken)
+    handler = Logger(Auth(handler, authToken), route.Name)
 
     router.
       Methods(route.Method).

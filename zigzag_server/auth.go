@@ -3,6 +3,7 @@ package main
 import (
           "net/http"
           "strings"
+          "log"
         )
 
 func Auth(handler http.Handler, zigzagToken string) http.Handler {
@@ -11,10 +12,16 @@ func Auth(handler http.Handler, zigzagToken string) http.Handler {
     if zigzagToken == "" || token == zigzagToken {
       handler.ServeHTTP(w, r)
     } else {
-      w.WriteHeader(http.StatusUnauthorized)
+      handleUnauthorized(w)
       return
     }
   })
+}
+
+func handleUnauthorized(w http.ResponseWriter) {
+  unauthorizedStatus := http.StatusUnauthorized
+  w.WriteHeader(unauthorizedStatus);
+  log.Printf("HTTP %d: Unathorized", unauthorizedStatus)
 }
 
 func requestToken(r *http.Request) string {
