@@ -3,6 +3,8 @@ Yet another in-memory data-structure storage
 
 ZigZag is a golang implementation of in-memory key:value store/cache similar to Redis that is suitable for applications running on a single machine(replication and sharding support is planning in the near future).
 
+You can check out the golang toolkit [here](https://github.com/valerykalashnikov/thunder).
+
 ##Supports
 
 ZigZag supports two types of storage:
@@ -79,7 +81,7 @@ Using running the passive expiration is up to you.
 
 * ```docker pull valerykalashnikov/zigzag```
 * ```docker run -d -p 8082:8082 --name zigzag_server valerykalashnikov/zigzag```
-* Use options pointed below using ```-e``` parameter, for example:  
+* Use options pointed below using ```-e``` parameter, for example:
 ```docker run -d -e ZIGZAG_AUTH=password -p 8082:8082 --name zigzag_server valerykalashnikov/zigzag```
 
 
