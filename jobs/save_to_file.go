@@ -13,7 +13,7 @@ func SaveToFile(wg sync.WaitGroup, db *zigzag.DB, path string ,period int) {
   items := db.Items()
   for range ticker.C {
     wg.Add(1)
+    defer wg.Done()
     persistence.SaveToFile(path, items)
-    wg.Done()
   }
 }
