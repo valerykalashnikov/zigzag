@@ -14,57 +14,7 @@ ZigZag supports two types of storage:
 
 ##You can use it as
 
-1\. A thread-safe ```map[string]interface{}``` with expiration times without transmiting and serialization data over network
-~~~go
-import "github.com/valerykalashnikov/zigzag/zigzag"
-
-// Firstly you have to implement the structure to store ttl values
-// For example to store ttl values in minutes
-type Clock struct{
-  ex int64
-}
-
-func (c *Clock) Now() time.Time { return time.Now() }
-func (c *Clock) Duration() time.Duration { return time.Duration(c.ex) * time.Minute }
-
-//initialize cache with the type that you want
-
-db, err := zigzag.New("cache")
-
-//or
-
-db, err := zigzag.New("sharded")
-
-// and ivoke the methods provided to you
-
-// to set value
-moment := &Clock{}
-db.Set(key, value, moment)
-
-// to get value
-value, found := db.Get(key)
-
-// to update value
-
-db.Upd(key, value)
-
-//to delete value
-db.Del(key)
-
-//to get all the keys which is stored in the cache matching pattern
-pattern := "^[a-z]+[[0-9]+]$"
-keys := db.Keys(pattern)
-~~~
-
-*Important*: ZigZag provides the function getting the n random items from the storage and checking it for expired items.
-If expired items were more than 25% it will run again.
-Using running the passive expiration is up to you.
-~~~go
-  n := 5
-  db.DelRandomExpires(n)
-~~~
-
-2\. A data-structure storage with an JSON api.
+1\. A data-structure storage with a JSON api.
   Supported features:
   * JSON API
   * Active and passive values expiration
@@ -147,6 +97,56 @@ For example, all keys matching ^[a-z]* pattern (dont' forget about escaping)
 Remove the specified keys. A key is ignored if it does not exist
 
 ```curl -X DELETE -v -H "Content-Type: application/json" -H "Authorization: Token password" http://localhost:8082/delete/your_key```
+
+2\. A thread-safe ```map[string]interface{}``` with expiration times without transmiting and serialization data over network
+~~~go
+import "github.com/valerykalashnikov/zigzag/zigzag"
+
+// Firstly you have to implement the structure to store ttl values
+// For example to store ttl values in minutes
+type Clock struct{
+  ex int64
+}
+
+func (c *Clock) Now() time.Time { return time.Now() }
+func (c *Clock) Duration() time.Duration { return time.Duration(c.ex) * time.Minute }
+
+//initialize cache with the type that you want
+
+db, err := zigzag.New("cache")
+
+//or
+
+db, err := zigzag.New("sharded")
+
+// and ivoke the methods provided to you
+
+// to set value
+moment := &Clock{}
+db.Set(key, value, moment)
+
+// to get value
+value, found := db.Get(key)
+
+// to update value
+
+db.Upd(key, value)
+
+//to delete value
+db.Del(key)
+
+//to get all the keys which is stored in the cache matching pattern
+pattern := "^[a-z]+[[0-9]+]$"
+keys := db.Keys(pattern)
+~~~
+
+*Important*: ZigZag provides the function getting the n random items from the storage and checking it for expired items.
+If expired items were more than 25% it will run again.
+Using running the passive expiration is up to you.
+~~~go
+  n := 5
+  db.DelRandomExpires(n)
+~~~
 
 
 
