@@ -43,7 +43,7 @@ func Set(db *zigzag.DB, w http.ResponseWriter, r *http.Request) (int, error) {
   }
 
   body, err := requestBody(r);
-  if err != nil {panic(err)}
+  if err != nil {return 500, err}
 
   if err := json.Unmarshal(body, &value); err != nil {
     respondWithParsingJsonError(w, err)
@@ -80,7 +80,7 @@ func Update(db *zigzag.DB, w http.ResponseWriter, r *http.Request) (int, error) 
   key  := getKey(r)
 
   body, err := requestBody(r)
-  if err != nil {panic(err)}
+  if err != nil {return 500, err}
 
   if err := json.Unmarshal(body, &value); err != nil {
     respondWithParsingJsonError(w, err)
