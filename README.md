@@ -88,7 +88,7 @@ Update the specified key. Time to live will not be overwritten.
 ```curl -X PUT -v -H "Content-Type: application/json" -H "Authorization: Token password" -d '{"name":"New todo"}' http://localhost:8082/update/your_key```
 
 ###Keys
-Returns all keys matching pattern
+Returns all keys matching pattern.
 For example, all keys matching ^[a-z]* pattern (dont' forget about escaping)
 
 ```curl -X GET -v -H "Content-Type: application/json" -H "Authorization: Token password" http://localhost:8082/keys/%5E\[a-z\]\*```
