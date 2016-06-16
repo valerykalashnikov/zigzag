@@ -88,7 +88,12 @@ func main() {
 		engineType = "cache"
 	}
 
-	db, err := zigzag.New(engineType)
+	isSlave := os.Getenv("ZIGZAG_IS_SLAVE")
+	if isSlave == "" {
+		isSlave = "0"
+	}
+
+	db, err := zigzag.New(engineType, isSlave)
 	if err != nil {
 		panic(err)
 	}

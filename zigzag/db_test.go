@@ -26,10 +26,36 @@ func (c *Past) Now() time.Time {
 
 func (c *Past) Duration() time.Duration { return time.Duration(c.ex) * time.Minute }
 
+func TestNew(t *testing.T) {
+	var (
+		connect = func(args ...string) (db *DB) {
+			db, err := New(args[0], args[1])
+			if err != nil {
+				t.Errorf("Set: expected nil, got error, %v", err)
+			}
+			return
+		}
+		check = func(status, expected bool) (err error) {
+			actual := status
+			if actual != expected {
+				t.Errorf("Set: expected %v, actual %v", expected, actual)
+			}
+			return
+		}
+	)
+	// test master
+	db := connect("cache", "0")
+	_ = check(db.is_slave, false)
+
+	// test slave
+	db = connect("cache", "1")
+	_ = check(db.is_slave, true)
+}
+
 func TestSet(t *testing.T) {
 	var moment cache.Momenter
 	// when TTL is not defined
-	db, err := New("sharded")
+	db, err := New("sharded", "0")
 	if err != nil {
 		t.Errorf("Set: expected nil, got error, %v", err)
 	}
@@ -59,8 +85,7 @@ func TestSet(t *testing.T) {
 
 func TestGet(t *testing.T) {
 	var moment cache.Momenter
-
-	db, err := New("sharded")
+	db, err := New("sharded", "0")
 
 	if err != nil {
 		t.Errorf("Set: expected nil, got error, %v", err)
@@ -92,7 +117,7 @@ func TestGet(t *testing.T) {
 }
 
 func TestUpd(t *testing.T) {
-	db, _ := New("sharded")
+	db, _ := New("sharded", "0")
 
 	key := "key"
 
@@ -110,7 +135,7 @@ func TestUpd(t *testing.T) {
 }
 
 func TestDel(t *testing.T) {
-	db, _ := New("sharded")
+	db, _ := New("sharded", "0")
 
 	key := "key"
 
@@ -129,7 +154,7 @@ func TestDel(t *testing.T) {
 }
 
 func TestKeys(t *testing.T) {
-	db, _ := New("sharded")
+	db, _ := New("sharded", "0")
 
 	db.Set("adam[23]", "value", &Present{})
 
@@ -144,7 +169,7 @@ func TestKeys(t *testing.T) {
 }
 
 func TestDelRandomExpires(t *testing.T) {
-	db, _ := New("sharded")
+	db, _ := New("sharded", "0")
 
 	itemsToRemoveAmount := 5
 	keys := []string{"key1", "key2", "key3"}

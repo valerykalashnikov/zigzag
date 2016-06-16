@@ -8,15 +8,25 @@ type Importer interface {
 	Import() (map[string]*cache.Item, error)
 }
 
-func New(cacheType string) (db *DB, err error) {
-	var store cache.DataStore
+func New(cacheType, is_slave string) (db *DB, err error) {
+	var (
+		store cache.DataStore
+		slave bool
+	)
 	store, err = cache.CreateCache(cacheType)
-	db = &DB{store}
+	switch is_slave {
+	case "1":
+		slave = true
+	default:
+		slave = false
+	}
+	db = &DB{store, slave}
 	return
 }
 
 type DB struct {
-	store cache.DataStore
+	store    cache.DataStore
+	is_slave bool
 }
 
 func (db *DB) Set(key string, value interface{}, m cache.Momenter) {
