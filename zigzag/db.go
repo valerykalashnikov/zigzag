@@ -29,6 +29,10 @@ type DB struct {
 	is_slave bool
 }
 
+func (db *DB) CheckSlavery() bool {
+	return db.is_slave
+}
+
 func (db *DB) Set(key string, value interface{}, m cache.Momenter) {
 	db.store.Set(key, value, m)
 }
