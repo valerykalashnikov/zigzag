@@ -26,30 +26,40 @@ func (c *Past) Now() time.Time {
 
 func (c *Past) Duration() time.Duration { return time.Duration(c.ex) * time.Minute }
 
+func ConnectDB(engType, slavery string, t *testing.T) (db *DB) {
+	db, err := New(engType, slavery)
+	if err != nil {
+		t.Errorf("Set: expected nil, got error, %v", err)
+	}
+	return
+}
+
+func Check(status, expected bool, t *testing.T) error {
+	actual := status
+	if actual != expected {
+		t.Errorf("Set: expected %v, actual %v", expected, actual)
+	}
+	return nil
+}
+
 func TestNew(t *testing.T) {
-	var (
-		connect = func(args ...string) (db *DB) {
-			db, err := New(args[0], args[1])
-			if err != nil {
-				t.Errorf("Set: expected nil, got error, %v", err)
-			}
-			return
-		}
-		check = func(status, expected bool) error {
-			actual := status
-			if actual != expected {
-				t.Errorf("Set: expected %v, actual %v", expected, actual)
-			}
-			return nil
-		}
-	)
 	// test master
-	db := connect("cache", "0")
-	_ = check(db.is_slave, false)
+	db := ConnectDB("cache", "0", t)
+	_ = Check(db.is_slave, false, t)
 
 	// test slave
-	db = connect("cache", "1")
-	_ = check(db.is_slave, true)
+	db = ConnectDB("cache", "1", t)
+	_ = Check(db.is_slave, true, t)
+}
+
+func TestCheckSlavery(t *testing.T) {
+	// test master
+	db := ConnectDB("cache", "0", t)
+	_ = Check(db.CheckSlavery(), false, t)
+
+	// test slave
+	db = ConnectDB("cache", "1", t)
+	_ = Check(db.CheckSlavery(), true, t)
 }
 
 func TestSet(t *testing.T) {

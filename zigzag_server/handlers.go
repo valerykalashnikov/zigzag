@@ -33,6 +33,10 @@ func Set(db *zigzag.DB, w http.ResponseWriter, r *http.Request) (int, error) {
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
+	if stat := db.CheckSlavery(); stat {
+		return 403, nil
+	}
+
 	key := getKey(r)
 
 	ex, err := getExpiration(r.URL.Query())
@@ -79,6 +83,10 @@ func Update(db *zigzag.DB, w http.ResponseWriter, r *http.Request) (int, error) 
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
+	if stat := db.CheckSlavery(); stat {
+		return 403, nil
+	}
+
 	key := getKey(r)
 
 	body, err := requestBody(r)
@@ -102,6 +110,10 @@ func Update(db *zigzag.DB, w http.ResponseWriter, r *http.Request) (int, error) 
 }
 
 func Delete(db *zigzag.DB, w http.ResponseWriter, r *http.Request) (int, error) {
+	if stat := db.CheckSlavery(); stat {
+		return 403, nil
+	}
+
 	key := getKey(r)
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	db.Del(key)
