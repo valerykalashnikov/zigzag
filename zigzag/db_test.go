@@ -35,12 +35,12 @@ func TestNew(t *testing.T) {
 			}
 			return
 		}
-		check = func(status, expected bool) (err error) {
+		check = func(status, expected bool) error {
 			actual := status
 			if actual != expected {
 				t.Errorf("Set: expected %v, actual %v", expected, actual)
 			}
-			return
+			return nil
 		}
 	)
 	// test master
