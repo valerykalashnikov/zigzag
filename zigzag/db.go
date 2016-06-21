@@ -1,6 +1,8 @@
 package zigzag
 
 import (
+	"errors"
+
 	"github.com/valerykalashnikov/zigzag/cache"
 )
 
@@ -8,29 +10,24 @@ type Importer interface {
 	Import() (map[string]*cache.Item, error)
 }
 
-func New(cacheType, is_slave string) (db *DB, err error) {
-	var (
-		store cache.DataStore
-		slave bool
-	)
+func New(cacheType, db_role string) (db *DB, err error) {
+	var store cache.DataStore
+
 	store, err = cache.CreateCache(cacheType)
-	switch is_slave {
-	case "1":
-		slave = true
-	default:
-		slave = false
+	if db_role != "master" && db_role != "slave" {
+		err = errors.New("Undefined role")
 	}
-	db = &DB{store, slave}
+	db = &DB{store, db_role}
 	return
 }
 
 type DB struct {
-	store    cache.DataStore
-	is_slave bool
+	store cache.DataStore
+	role  string
 }
 
-func (db *DB) CheckSlavery() bool {
-	return db.is_slave
+func (db *DB) CheckRole() string {
+	return db.role
 }
 
 func (db *DB) Set(key string, value interface{}, m cache.Momenter) {

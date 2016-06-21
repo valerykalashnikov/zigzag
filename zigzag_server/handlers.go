@@ -33,7 +33,7 @@ func Set(db *zigzag.DB, w http.ResponseWriter, r *http.Request) (int, error) {
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-	if stat := db.CheckSlavery(); stat {
+	if stat := db.CheckRole(); stat == "slave" {
 		return 403, nil
 	}
 
@@ -83,7 +83,7 @@ func Update(db *zigzag.DB, w http.ResponseWriter, r *http.Request) (int, error) 
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-	if stat := db.CheckSlavery(); stat {
+	if stat := db.CheckRole(); stat == "slave" {
 		return 403, nil
 	}
 
@@ -110,7 +110,7 @@ func Update(db *zigzag.DB, w http.ResponseWriter, r *http.Request) (int, error) 
 }
 
 func Delete(db *zigzag.DB, w http.ResponseWriter, r *http.Request) (int, error) {
-	if stat := db.CheckSlavery(); stat {
+	if stat := db.CheckRole(); stat == "slave" {
 		return 403, nil
 	}
 

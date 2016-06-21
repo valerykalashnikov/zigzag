@@ -88,16 +88,17 @@ func main() {
 		engineType = "cache"
 	}
 
-	isSlave := os.Getenv("ZIGZAG_IS_SLAVE")
-	if isSlave == "" {
-		isSlave = "0"
+	role := os.Getenv("ZIGZAG_ROLE")
+	if role == "" {
+		role = "master"
 	}
 
-	db, err := zigzag.New(engineType, isSlave)
+	db, err := zigzag.New(engineType, role)
 	if err != nil {
 		panic(err)
 	}
 	fmt.Println(" - Engine type:", engineType)
+	fmt.Println(" - Role:", role)
 
 	backupFilePath := os.Getenv("ZIGZAG_BACKUP_FILE")
 	if backupFilePath != "" && os.Getenv("ZIGZAG_BACKUP_INTERVAL") != "" {
