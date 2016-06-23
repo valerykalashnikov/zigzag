@@ -1,7 +1,10 @@
 package zigzag
 
 import (
+	"encoding/gob"
 	"errors"
+	"fmt"
+	"net"
 
 	"github.com/valerykalashnikov/zigzag/cache"
 )
@@ -17,21 +20,44 @@ func New(cacheType, db_role string) (db *DB, err error) {
 	if db_role != "master" && db_role != "slave" {
 		err = errors.New("Undefined role")
 	}
-	db = &DB{store, db_role}
+	db = &DB{store: store, role: db_role}
 	return
 }
 
+func SetReplicationPort(db *DB, port string) {
+	db.repPort = port
+}
+
 type DB struct {
-	store cache.DataStore
-	role  string
+	store   cache.DataStore
+	role    string
+	repPort string ":8084"
 }
 
 func (db *DB) CheckRole() string {
 	return db.role
 }
 
+func (db *DB) SendToSlave(sendData *cache.CacheImport) error {
+	address := fmt.Sprintf("localhost", db.repPort)
+	conn, err := net.Dial("tcp", address)
+
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	enc := gob.NewEncoder(conn)
+	enc.Encode(&sendData)
+
+	return nil
+}
+
 func (db *DB) Set(key string, value interface{}, m cache.Momenter) {
 	db.store.Set(key, value, m)
+
+	data := &cache.CacheImport{key, value, m}
+	db.SendToSlave(data)
 }
 
 func (db *DB) Get(key string) (interface{}, bool) {

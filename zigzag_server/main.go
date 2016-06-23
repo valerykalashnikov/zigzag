@@ -112,8 +112,8 @@ func main() {
 	if role == "slave" {
 		fmt.Println("* Running replication service...")
 		repPort := os.Getenv("ZIGZAG_REPLICATION_PORT")
-		if repPort == "" {
-			repPort = ":8084"
+		if repPort != "" && repPort != ":8084" {
+			zigzag.SetReplicationPort(db, repPort)
 		}
 
 		err := jobs.StartReplicationService(db, repPort)
