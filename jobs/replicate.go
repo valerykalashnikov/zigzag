@@ -1,15 +1,20 @@
 package jobs
 
 import (
+	"encoding/gob"
 	"net"
-	"net/rpc"
 
-	"github.com/valerykalashnikov/zigzag/remote"
+	"github.com/valerykalashnikov/zigzag/cache"
+	"github.com/valerykalashnikov/zigzag/zigzag"
 )
 
-func StartReplicationService(port string) error {
-	replicate := new(remote.Replicate)
-	rpc.Register(replicate)
+func StartReplicationService(slave *zigzag.DB, port string) error {
+	var handleConnection = func(conn net.Conn) {
+		dec := gob.NewDecoder(conn)
+		importedCache := &cache.CacheImport{}
+		dec.Decode(importedCache)
+		slave.Set(importedCache.Key, importedCache.Value, importedCache.M)
+	}
 
 	listener, err := net.Listen("tcp", port)
 	if err != nil {
@@ -22,7 +27,7 @@ func StartReplicationService(port string) error {
 			return err
 		}
 
-		go rpc.ServeConn(conn)
+		go handleConnection(conn)
 	}
 	return nil
 }
