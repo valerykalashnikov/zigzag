@@ -109,6 +109,19 @@ func main() {
 	fmt.Println("* Running background jobs...")
 	wg := runBackgroundJobs(db)
 
+	if role == "slave" {
+		fmt.Println("* Running replication service...")
+		repPort := os.Getenv("ZIGZAG_REPLICATION_PORT")
+		if repPort == "" {
+			repPort = ":8084"
+		}
+
+		err := jobs.StartReplicationService(db, repPort)
+		if err != nil {
+			panic(err)
+		}
+	}
+
 	handleInterruptSignal(wg)
 
 	router := NewRouter(authToken, db)
