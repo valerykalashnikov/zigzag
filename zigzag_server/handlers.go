@@ -34,7 +34,9 @@ func Set(db *zigzag.DB, w http.ResponseWriter, r *http.Request) (int, error) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
 	if stat := db.CheckRole(); stat == "slave" {
-		return 403, nil
+		w.WriteHeader(http.StatusForbidden)
+		fmt.Fprintf(w, "Operation not permitted")
+		return http.StatusForbidden, errors.New("Operation not permitted")
 	}
 
 	key := getKey(r)
@@ -84,7 +86,9 @@ func Update(db *zigzag.DB, w http.ResponseWriter, r *http.Request) (int, error) 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
 	if stat := db.CheckRole(); stat == "slave" {
-		return 403, nil
+		w.WriteHeader(http.StatusForbidden)
+		fmt.Fprintf(w, "Operation not permitted")
+		return http.StatusForbidden, errors.New("Operation not permitted")
 	}
 
 	key := getKey(r)
@@ -111,7 +115,9 @@ func Update(db *zigzag.DB, w http.ResponseWriter, r *http.Request) (int, error) 
 
 func Delete(db *zigzag.DB, w http.ResponseWriter, r *http.Request) (int, error) {
 	if stat := db.CheckRole(); stat == "slave" {
-		return 403, nil
+		w.WriteHeader(http.StatusForbidden)
+		fmt.Fprintf(w, "Operation not permitted")
+		return http.StatusForbidden, errors.New("Operation not permitted")
 	}
 
 	key := getKey(r)
