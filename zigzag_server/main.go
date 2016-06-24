@@ -48,6 +48,17 @@ func runBackgroundJobs(db *zigzag.DB) sync.WaitGroup {
 
 	go jobs.CleanCache(wg, db, 20)
 
+	if db.CheckRole() == "slave" {
+		fmt.Println("* Running replication service...")
+		repPort := os.Getenv("ZIGZAG_REPLICATION_PORT")
+		if repPort == "" {
+			repPort = ":8084"
+			zigzag.SetReplicationPort(db, repPort)
+		}
+
+		go jobs.StartReplicationService(wg, db, repPort)
+	}
+
 	return wg
 }
 
@@ -108,19 +119,6 @@ func main() {
 
 	fmt.Println("* Running background jobs...")
 	wg := runBackgroundJobs(db)
-
-	if role == "slave" {
-		fmt.Println("* Running replication service...")
-		repPort := os.Getenv("ZIGZAG_REPLICATION_PORT")
-		if repPort != "" && repPort != ":8084" {
-			zigzag.SetReplicationPort(db, repPort)
-		}
-
-		err := jobs.StartReplicationService(db, repPort)
-		if err != nil {
-			panic(err)
-		}
-	}
 
 	handleInterruptSignal(wg)
 
