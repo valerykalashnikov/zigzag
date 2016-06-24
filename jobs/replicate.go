@@ -3,12 +3,13 @@ package jobs
 import (
 	"encoding/gob"
 	"net"
+	"sync"
 
 	"github.com/valerykalashnikov/zigzag/cache"
 	"github.com/valerykalashnikov/zigzag/zigzag"
 )
 
-func StartReplicationService(slave *zigzag.DB, port string) error {
+func StartReplicationService(wg sync.WaitGroup, slave *zigzag.DB, port string) {
 	var handleConnection = func(conn net.Conn) {
 		dec := gob.NewDecoder(conn)
 		importedCache := &cache.CacheImport{}
@@ -18,16 +19,17 @@ func StartReplicationService(slave *zigzag.DB, port string) error {
 
 	listener, err := net.Listen("tcp", port)
 	if err != nil {
-		return err
+		panic(err)
 	}
 
 	for {
+		wg.Add(1)
+		defer wg.Done()
 		conn, err := listener.Accept()
 		if err != nil {
-			return err
+			panic(err)
 		}
 
-		go handleConnection(conn)
+		handleConnection(conn)
 	}
-	return nil
 }
