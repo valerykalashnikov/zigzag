@@ -9,18 +9,11 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
-	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/valerykalashnikov/zigzag/structures"
 	"github.com/valerykalashnikov/zigzag/zigzag"
 )
-
-type Clock struct {
-	ex int64
-}
-
-func (c *Clock) Now() time.Time          { return time.Now() }
-func (c *Clock) Duration() time.Duration { return time.Duration(c.ex) * time.Minute }
 
 func Index(db *zigzag.DB, w http.ResponseWriter, r *http.Request) (int, error) {
 	fmt.Fprintln(w, "ZigZag server!")
@@ -58,7 +51,7 @@ func Set(db *zigzag.DB, w http.ResponseWriter, r *http.Request) (int, error) {
 		return 422, err
 	}
 
-	db.Set(key, value, &Clock{ex})
+	db.Set(key, value, &structures.Clock{ex})
 
 	w.WriteHeader(http.StatusOK)
 	return http.StatusOK, nil

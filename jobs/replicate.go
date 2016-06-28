@@ -6,18 +6,22 @@ import (
 	"sync"
 
 	"github.com/valerykalashnikov/zigzag/cache"
+	"github.com/valerykalashnikov/zigzag/structures"
 	"github.com/valerykalashnikov/zigzag/zigzag"
 )
 
-func StartReplicationService(wg sync.WaitGroup, slave *zigzag.DB, port string) {
+func StartReplicationService(wg sync.WaitGroup, slave *zigzag.DB) {
 	var handleConnection = func(conn net.Conn) {
+		gob.Register(map[string]interface{}{})
+		gob.RegisterName("*structures.Clock", &structures.Clock{})
+
 		dec := gob.NewDecoder(conn)
 		importedCache := &cache.CacheImport{}
 		dec.Decode(importedCache)
 		slave.Set(importedCache.Key, importedCache.Value, importedCache.M)
 	}
 
-	listener, err := net.Listen("tcp", port)
+	listener, err := net.Listen("tcp", slave.GetReplicationPort())
 	if err != nil {
 		panic(err)
 	}

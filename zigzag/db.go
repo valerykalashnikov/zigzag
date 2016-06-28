@@ -3,10 +3,10 @@ package zigzag
 import (
 	"encoding/gob"
 	"errors"
-	"fmt"
 	"net"
 
 	"github.com/valerykalashnikov/zigzag/cache"
+	"github.com/valerykalashnikov/zigzag/structures"
 )
 
 type Importer interface {
@@ -31,21 +31,28 @@ func SetReplicationPort(db *DB, port string) {
 type DB struct {
 	store   cache.DataStore
 	role    string
-	repPort string ":8084"
+	repPort string
 }
 
 func (db *DB) CheckRole() string {
 	return db.role
 }
 
+func (db *DB) GetReplicationPort() string {
+	return db.repPort
+}
+
 func (db *DB) SendToSlave(sendData *cache.CacheImport) error {
-	address := fmt.Sprintf("localhost", db.repPort)
-	conn, err := net.Dial("tcp", address)
+	conn, err := net.Dial("tcp", "localhost"+db.repPort)
+	// conn, err := net.Dial("tcp", "192.168.99.100"+db.repPort)
 
 	if err != nil {
 		return err
 	}
 	defer conn.Close()
+
+	gob.Register(map[string]interface{}{})
+	gob.RegisterName("*structures.Clock", &structures.Clock{})
 
 	enc := gob.NewEncoder(conn)
 	enc.Encode(&sendData)
