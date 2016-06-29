@@ -48,6 +48,12 @@ func runBackgroundJobs(db *zigzag.DB) sync.WaitGroup {
 
 	go jobs.CleanCache(wg, db, 20)
 
+	if db.CheckRole() == "slave" {
+		fmt.Println("* Running replication service...")
+
+		go jobs.StartReplicationService(wg, db)
+	}
+
 	return wg
 }
 
@@ -88,16 +94,28 @@ func main() {
 		engineType = "cache"
 	}
 
-	db, err := zigzag.New(engineType)
+	role := os.Getenv("ZIGZAG_ROLE")
+	if role == "" {
+		role = "master"
+	}
+
+	db, err := zigzag.New(engineType, role)
 	if err != nil {
 		panic(err)
 	}
 	fmt.Println(" - Engine type:", engineType)
+	fmt.Println(" - Role:", role)
 
 	backupFilePath := os.Getenv("ZIGZAG_BACKUP_FILE")
 	if backupFilePath != "" && os.Getenv("ZIGZAG_BACKUP_INTERVAL") != "" {
 		fmt.Println("* Importing cache from ", backupFilePath)
 		ImportCache(db, backupFilePath)
+	}
+
+	repPort := os.Getenv("ZIGZAG_REPLICATION_PORT")
+	if repPort == "" {
+		repPort = ":8084"
+		zigzag.SetReplicationPort(db, repPort)
 	}
 
 	fmt.Println("* Running background jobs...")

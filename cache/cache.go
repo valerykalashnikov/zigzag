@@ -28,6 +28,12 @@ type Cache struct {
 	mux   sync.RWMutex
 }
 
+type CacheImport struct {
+	Key   string
+	Value interface{}
+	M     Momenter
+}
+
 func (c *Cache) Set(key string, value interface{}, moment Momenter) {
 	var expireAt int64
 	duration := moment.Duration()

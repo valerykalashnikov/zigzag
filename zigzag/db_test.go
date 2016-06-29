@@ -26,10 +26,52 @@ func (c *Past) Now() time.Time {
 
 func (c *Past) Duration() time.Duration { return time.Duration(c.ex) * time.Minute }
 
+func ConnectDB(engType, role string, t *testing.T) (db *DB) {
+	db, err := New(engType, role)
+	if err != nil {
+		t.Errorf("Set: expected nil, got error, %v", err)
+	}
+	return
+}
+
+func Check(status, expected string, t *testing.T) error {
+	actual := status
+	if actual != expected {
+		t.Errorf("Set: expected %v, actual %v", expected, actual)
+	}
+	return nil
+}
+
+func TestNew(t *testing.T) {
+	// test master
+	db := ConnectDB("cache", "master", t)
+	_ = Check(db.role, "master", t)
+
+	// test slave
+	db = ConnectDB("cache", "slave", t)
+	_ = Check(db.role, "slave", t)
+
+	// test gibberish
+	_, err := New("cache", "gibberish")
+	if err == nil {
+		t.Errorf("ConnectDB should return an 'Undefined role' error")
+	}
+}
+
+func TestCheckRole(t *testing.T) {
+	// test master
+	db := ConnectDB("cache", "master", t)
+	_ = Check(db.CheckRole(), "master", t)
+
+	// test slave
+	db = ConnectDB("cache", "slave", t)
+	_ = Check(db.CheckRole(), "slave", t)
+}
+
 func TestSet(t *testing.T) {
 	var moment cache.Momenter
 	// when TTL is not defined
-	db, err := New("sharded")
+	db, err := New("sharded", "master")
 	if err != nil {
 		t.Errorf("Set: expected nil, got error, %v", err)
 	}
@@ -60,7 +102,7 @@ func TestSet(t *testing.T) {
 func TestGet(t *testing.T) {
 	var moment cache.Momenter
 
-	db, err := New("sharded")
+	db, err := New("sharded", "master")
 
 	if err != nil {
 		t.Errorf("Set: expected nil, got error, %v", err)
@@ -92,7 +134,7 @@ func TestGet(t *testing.T) {
 }
 
 func TestUpd(t *testing.T) {
-	db, _ := New("sharded")
+	db, _ := New("sharded", "master")
 
 	key := "key"
 
@@ -110,7 +152,7 @@ func TestUpd(t *testing.T) {
 }
 
 func TestDel(t *testing.T) {
-	db, _ := New("sharded")
+	db, _ := New("sharded", "master")
 
 	key := "key"
 
@@ -129,7 +171,7 @@ func TestDel(t *testing.T) {
 }
 
 func TestKeys(t *testing.T) {
-	db, _ := New("sharded")
+	db, _ := New("sharded", "master")
 
 	db.Set("adam[23]", "value", &Present{})
 
@@ -144,7 +186,7 @@ func TestKeys(t *testing.T) {
 }
 
 func TestDelRandomExpires(t *testing.T) {
-	db, _ := New("sharded")
+	db, _ := New("sharded", "master")
 
 	itemsToRemoveAmount := 5
 	keys := []string{"key1", "key2", "key3"}

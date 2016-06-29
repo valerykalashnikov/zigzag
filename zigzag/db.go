@@ -1,26 +1,70 @@
 package zigzag
 
 import (
+	"encoding/gob"
+	"errors"
+	"net"
+
 	"github.com/valerykalashnikov/zigzag/cache"
+	"github.com/valerykalashnikov/zigzag/structures"
 )
 
 type Importer interface {
 	Import() (map[string]*cache.Item, error)
 }
 
-func New(cacheType string) (db *DB, err error) {
+func New(cacheType, db_role string) (db *DB, err error) {
 	var store cache.DataStore
+
 	store, err = cache.CreateCache(cacheType)
-	db = &DB{store}
+	if db_role != "master" && db_role != "slave" {
+		err = errors.New("Undefined role")
+	}
+	db = &DB{store: store, role: db_role}
 	return
 }
 
+func SetReplicationPort(db *DB, port string) {
+	db.repPort = port
+}
+
 type DB struct {
-	store cache.DataStore
+	store   cache.DataStore
+	role    string
+	repPort string
+}
+
+func (db *DB) CheckRole() string {
+	return db.role
+}
+
+func (db *DB) GetReplicationPort() string {
+	return db.repPort
+}
+
+func (db *DB) SendToSlave(sendData *cache.CacheImport) error {
+	conn, err := net.Dial("tcp", "localhost"+db.repPort)
+	// conn, err := net.Dial("tcp", "192.168.99.100"+db.repPort)
+
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	gob.Register(map[string]interface{}{})
+	gob.RegisterName("*structures.Clock", &structures.Clock{})
+
+	enc := gob.NewEncoder(conn)
+	enc.Encode(&sendData)
+
+	return nil
 }
 
 func (db *DB) Set(key string, value interface{}, m cache.Momenter) {
 	db.store.Set(key, value, m)
+
+	data := &cache.CacheImport{key, value, m}
+	db.SendToSlave(data)
 }
 
 func (db *DB) Get(key string) (interface{}, bool) {

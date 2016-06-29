@@ -9,18 +9,11 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
-	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/valerykalashnikov/zigzag/structures"
 	"github.com/valerykalashnikov/zigzag/zigzag"
 )
-
-type Clock struct {
-	ex int64
-}
-
-func (c *Clock) Now() time.Time          { return time.Now() }
-func (c *Clock) Duration() time.Duration { return time.Duration(c.ex) * time.Minute }
 
 func Index(db *zigzag.DB, w http.ResponseWriter, r *http.Request) (int, error) {
 	fmt.Fprintln(w, "ZigZag server!")
@@ -32,6 +25,12 @@ func Set(db *zigzag.DB, w http.ResponseWriter, r *http.Request) (int, error) {
 	var ex int64
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
+	if stat := db.CheckRole(); stat == "slave" {
+		w.WriteHeader(http.StatusForbidden)
+		fmt.Fprintf(w, "Operation not permitted")
+		return http.StatusForbidden, errors.New("Operation not permitted")
+	}
 
 	key := getKey(r)
 
@@ -52,7 +51,7 @@ func Set(db *zigzag.DB, w http.ResponseWriter, r *http.Request) (int, error) {
 		return 422, err
 	}
 
-	db.Set(key, value, &Clock{ex})
+	db.Set(key, value, &structures.Clock{ex})
 
 	w.WriteHeader(http.StatusOK)
 	return http.StatusOK, nil
@@ -79,6 +78,12 @@ func Update(db *zigzag.DB, w http.ResponseWriter, r *http.Request) (int, error) 
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
+	if stat := db.CheckRole(); stat == "slave" {
+		w.WriteHeader(http.StatusForbidden)
+		fmt.Fprintf(w, "Operation not permitted")
+		return http.StatusForbidden, errors.New("Operation not permitted")
+	}
+
 	key := getKey(r)
 
 	body, err := requestBody(r)
@@ -102,6 +107,12 @@ func Update(db *zigzag.DB, w http.ResponseWriter, r *http.Request) (int, error) 
 }
 
 func Delete(db *zigzag.DB, w http.ResponseWriter, r *http.Request) (int, error) {
+	if stat := db.CheckRole(); stat == "slave" {
+		w.WriteHeader(http.StatusForbidden)
+		fmt.Fprintf(w, "Operation not permitted")
+		return http.StatusForbidden, errors.New("Operation not permitted")
+	}
+
 	key := getKey(r)
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	db.Del(key)
