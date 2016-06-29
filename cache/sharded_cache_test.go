@@ -1,180 +1,180 @@
 package cache
 
 import (
-          "testing"
-          "reflect"
-          "time"
-        )
+	"reflect"
+	"testing"
+	"time"
+)
 
 func TestShardedCacheSet(t *testing.T) {
-  presentTime = &PresentTime{0}
-  shardedCache := NewShardedCache()
-  // when TTL is not defined
-  var testsWithoutTTL = []struct {
-    key    string
-    value    interface {}
-    expected *Item
-  }{
-    {
-      "key",
-      "value",
-      &Item{"value", 0},
-    },
-    {
-      "key",
-      [2]string{"Penn", "Teller"},
-      &Item{[2]string{"Penn", "Teller"}, 0},
-    },
-    {
-      "key",
-      map[string]int{"rsc": 3711, "r": 2138},
-      &Item{map[string]int{"rsc": 3711, "r": 2138}, 0},
-    },
-  }
-  for _, tt := range testsWithoutTTL {
-    shardedCache.Set(tt.key, tt.value, presentTime)
-    // shard := shardedCache.GetShard(tt.key)
+	presentTime = &PresentTime{0}
+	shardedCache := NewShardedCache()
+	// when TTL is not defined
+	var testsWithoutTTL = []struct {
+		key      string
+		value    interface{}
+		expected *Item
+	}{
+		{
+			"key",
+			"value",
+			&Item{"value", 0},
+		},
+		{
+			"key",
+			[2]string{"Penn", "Teller"},
+			&Item{[2]string{"Penn", "Teller"}, 0},
+		},
+		{
+			"key",
+			map[string]int{"rsc": 3711, "r": 2138},
+			&Item{map[string]int{"rsc": 3711, "r": 2138}, 0},
+		},
+	}
+	for _, tt := range testsWithoutTTL {
+		shardedCache.Set(tt.key, tt.value, presentTime)
+		// shard := shardedCache.GetShard(tt.key)
 
-    actual, _ := shardedCache.Get(tt.key)
-    if !reflect.DeepEqual(actual, tt.expected) {
-      t.Errorf("Set: expected %v, actual %v", tt.expected, actual)
-    }
-  }
+		actual, _ := shardedCache.Get(tt.key)
+		if !reflect.DeepEqual(actual, tt.expected) {
+			t.Errorf("Set: expected %v, actual %v", tt.expected, actual)
+		}
+	}
 
-  ex := int64(30)
-  key :=   "key"
-  value := "value"
-  duration := time.Duration(ex) * time.Minute
-  ancientTime = &AncientTime{duration}
-  shardedCache.Set(key, value, ancientTime)
+	ex := int64(30)
+	key := "key"
+	value := "value"
+	duration := time.Duration(ex) * time.Minute
+	ancientTime = &AncientTime{duration}
+	shardedCache.Set(key, value, ancientTime)
 
-  actual, _ := shardedCache.Get(key)
-  if actual.ExpireAt == 0 {
-    t.Error("Set: ExpireAt should be greater than nil")
-  }
-  if actual.ExpireAt != ancientTime.Now().Add(duration).UnixNano() {
-    t.Error("Set: ExpireAt should be now + duration")
-  }
+	actual, _ := shardedCache.Get(key)
+	if actual.ExpireAt == 0 {
+		t.Error("Set: ExpireAt should be greater than nil")
+	}
+	if actual.ExpireAt != ancientTime.Now().Add(duration).UnixNano() {
+		t.Error("Set: ExpireAt should be now + duration")
+	}
 }
 
 func TestShardedCacheGet(t *testing.T) {
-  shardedCache := NewShardedCache()
-  // when ttl is not defined
-  presentTime = &PresentTime{0}
-  key := "key"
-  expected := &Item{"value", 0}
+	shardedCache := NewShardedCache()
+	// when ttl is not defined
+	presentTime = &PresentTime{0}
+	key := "key"
+	expected := &Item{"value", 0}
 
-  shardedCache.Set(key, "value", presentTime)
-  actual, _ := shardedCache.Get(key)
+	shardedCache.Set(key, "value", presentTime)
+	actual, _ := shardedCache.Get(key)
 
-  if (*actual != *expected) {
-    t.Errorf("Get: expected %v, actual %v", expected, actual)
-  }
-  //when key is not present in storage
-  // shard := shardedCache.GetShard(key)
+	if *actual != *expected {
+		t.Errorf("Get: expected %v, actual %v", expected, actual)
+	}
+	//when key is not present in storage
+	// shard := shardedCache.GetShard(key)
 
-  shardedCache.Del("key")
+	shardedCache.Del("key")
 
-  actual, found := shardedCache.Get(key)
-  if (found != false) {
-    t.Error("Get: expected false while returning empty value, found flag is", found)
-  }
+	actual, found := shardedCache.Get(key)
+	if found != false {
+		t.Error("Get: expected false while returning empty value, found flag is", found)
+	}
 
-  //when key is presented in storage but it is outdated
-  ancientTime = &AncientTime{10}
-  shardedCache.Del("key")
-  shardedCache.Set(key, "value", ancientTime)
-  actual, found = shardedCache.Get(key)
-  if (!actual.Expired()) {
-    t.Error("Get: Returned value should be expired")
-  }
+	//when key is presented in storage but it is outdated
+	ancientTime = &AncientTime{10}
+	shardedCache.Del("key")
+	shardedCache.Set(key, "value", ancientTime)
+	actual, found = shardedCache.Get(key)
+	if !actual.Expired() {
+		t.Error("Get: Returned value should be expired")
+	}
 }
 
 func TestShardedCacheUpd(t *testing.T) {
-  shardedCache := NewShardedCache()
+	shardedCache := NewShardedCache()
 
-  //it shouldn't change expiration
-  key :=   "key"
-  value := "value"
-  ex := int64(30)
+	//it shouldn't change expiration
+	key := "key"
+	value := "value"
+	ex := int64(30)
 
-  duration := time.Duration(ex) * time.Minute
-  ancientTime = &AncientTime{duration}
+	duration := time.Duration(ex) * time.Minute
+	ancientTime = &AncientTime{duration}
 
-  shardedCache.Set(key, value, ancientTime)
-  expectedValue := "newValue"
-  shardedCache.Upd(key, expectedValue)
+	shardedCache.Set(key, value, ancientTime)
+	expectedValue := "newValue"
+	shardedCache.Upd(key, expectedValue)
 
-  actual, _ := shardedCache.Get(key)
-  actualValue := actual.Object
+	actual, _ := shardedCache.Get(key)
+	actualValue := actual.Object
 
-  if (actualValue != expectedValue) {
-    t.Errorf("Upd: Object should be changed, expect %v, actual %v", expectedValue, actualValue)
-  }
+	if actualValue != expectedValue {
+		t.Errorf("Upd: Object should be changed, expect %v, actual %v", expectedValue, actualValue)
+	}
 
 }
 
 func TestShardedCacheDel(t *testing.T) {
-  shardedCache := NewShardedCache()
+	shardedCache := NewShardedCache()
 
-  key := "key"
+	key := "key"
 
-  expected := false
+	expected := false
 
-  presentTime = &PresentTime{0}
-  shardedCache.Set(key, "value", presentTime)
+	presentTime = &PresentTime{0}
+	shardedCache.Set(key, "value", presentTime)
 
-  shardedCache.Del(key)
+	shardedCache.Del(key)
 
-  _, found := shardedCache.Get(key)
+	_, found := shardedCache.Get(key)
 
-  if (found != expected) {
-    t.Errorf("Get: expected %v, actual %v", expected, found)
-  }
+	if found != expected {
+		t.Errorf("Get: expected %v, actual %v", expected, found)
+	}
 
 }
 
 func TestShardedCacheKeys(t *testing.T) {
-  shardedCache := NewShardedCache()
+	shardedCache := NewShardedCache()
 
-  presentTime = &PresentTime{0}
-  shardedCache.Set("adam[23]", "value", presentTime)
-  shardedCache.Set("eve[7]", "value", presentTime)
-  shardedCache.Set("Job[48]", "value", presentTime)
-  shardedCache.Set("snakey", "value", presentTime)
+	presentTime = &PresentTime{0}
+	shardedCache.Set("adam[23]", "value", presentTime)
+	shardedCache.Set("eve[7]", "value", presentTime)
+	shardedCache.Set("Job[48]", "value", presentTime)
+	shardedCache.Set("snakey", "value", presentTime)
 
-  pattern := "^[a-z]+[[0-9]+]$"
+	pattern := "^[a-z]+[[0-9]+]$"
 
-  keys := shardedCache.Keys(pattern)
+	keys := shardedCache.Keys(pattern)
 
-  if (!stringInSlice("adam[23]", keys)) {
-    t.Errorf("Keys: expect %v, got %v", "adam[23]", keys[0])
-  }
-  if (!stringInSlice("eve[7]", keys)) {
-    t.Errorf("Keys: expect %v, got %v", "eve[7]", keys[1])
-  }
+	if !stringInSlice("adam[23]", keys) {
+		t.Errorf("Keys: expect %v, got %v", "adam[23]", keys[0])
+	}
+	if !stringInSlice("eve[7]", keys) {
+		t.Errorf("Keys: expect %v, got %v", "eve[7]", keys[1])
+	}
 
-  if (len(keys) != 2) {
-    t.Errorf("Keys: length of keys should be 2, got: %v", len(keys))
-  }
+	if len(keys) != 2 {
+		t.Errorf("Keys: length of keys should be 2, got: %v", len(keys))
+	}
 }
 
 func TestShardedCacheItems(t *testing.T) {
-  shardedCache := NewShardedCache()
-  presentTime = &PresentTime{0}
-  shardedCache.Set("adam[23]", "value1", presentTime)
-  shardedCache.Set("eve[7]", "value2", presentTime)
-  items := shardedCache.Items()
+	shardedCache := NewShardedCache()
+	presentTime = &PresentTime{0}
+	shardedCache.Set("adam[23]", "value1", presentTime)
+	shardedCache.Set("eve[7]", "value2", presentTime)
+	items := shardedCache.Items()
 
-  if _, ok := items["adam[23]"]; !ok {
-    t.Error("Items: items should contain 'adam[23]' key")
-  }
+	if _, ok := items["adam[23]"]; !ok {
+		t.Error("Items: items should contain 'adam[23]' key")
+	}
 
-  if _, ok := items["eve[7]"]; !ok {
-    t.Error("Items: items should contain 'eve[7]' key")
-  }
+	if _, ok := items["eve[7]"]; !ok {
+		t.Error("Items: items should contain 'eve[7]' key")
+	}
 
-  if (len(items) != 2) {
-    t.Errorf("Items: length of items should be 2, got: %v", len(items))
-  }
+	if len(items) != 2 {
+		t.Errorf("Items: length of items should be 2, got: %v", len(items))
+	}
 }

@@ -1,7 +1,7 @@
 # ZigZag
 Yet another in-memory data-structure storage
 
-ZigZag is a golang implementation of in-memory key:value store/cache similar to Redis that is suitable for applications running on a single machine(replication and sharding support is planning in the near future).
+ZigZag is a golang implementation of in-memory key:value store/cache similar to Redis that is suitable for applications running on a single machine (replication and sharding support is planning in the near future).
 
 You can check out the golang toolkit [here](https://github.com/valerykalashnikov/thunder).
 
@@ -40,7 +40,7 @@ ZigZag supports two types of storage:
 
 * Setting proper cache type
 
-Simple cash is used by default. If you want to use sharded cache you have to set ```ZIGZAG_ENGINE_TYPE``` env value
+Simple cache is used by default. If you want to use sharded cache you have to set ```ZIGZAG_ENGINE_TYPE``` env value
 ~~~bash
 ZIGZAG_ENGINE_TYPE=sharded
 ~~~
@@ -72,7 +72,7 @@ Set key to hold the value. If key already holds a value, it is overwritten, rega
 
 ``` curl -v -H "Content-Type: application/json" -H "Authorization: Token password" -d '{"name":"Todo"}' http://localhost:8082/set/your_key```
 
-* With expiration time(in minutes)
+* With expiration time (in minutes)
 
 ``` curl -v -H "Content-Type: application/json" -H "Authorization: Token password" -d '{"name":"Todo"}' http://localhost:8082/set/your_key?ex=1 ```
 
@@ -88,7 +88,7 @@ Update the specified key. Time to live will not be overwritten.
 ```curl -X PUT -v -H "Content-Type: application/json" -H "Authorization: Token password" -d '{"name":"New todo"}' http://localhost:8082/update/your_key```
 
 ###Keys
-Returns all keys matching pattern
+Returns all keys matching pattern.
 For example, all keys matching ^[a-z]* pattern (dont' forget about escaping)
 
 ```curl -X GET -v -H "Content-Type: application/json" -H "Authorization: Token password" http://localhost:8082/keys/%5E\[a-z\]\*```
