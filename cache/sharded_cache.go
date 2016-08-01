@@ -3,9 +3,10 @@ package cache
 import (
 	"bytes"
 	"fmt"
-	farm "github.com/dgryski/go-farm"
 	"regexp"
 	"sync"
+
+	"github.com/valerykalashnikov/zigzag/pearson"
 )
 
 type FarmHash struct {
@@ -21,7 +22,7 @@ func (f *FarmHash) Reset() {
 }
 
 func (f *FarmHash) Sum64() uint64 {
-	return farm.Hash64(f.buf.Bytes())
+	return pearson.CreatePearson16(f.buf.Bytes(), 256, 8)
 }
 
 type ShardedCache map[string]*CacheShard
