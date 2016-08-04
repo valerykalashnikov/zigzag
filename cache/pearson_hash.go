@@ -1,4 +1,4 @@
-package helpers
+package cache
 
 // T table for Pearson hashing from RFC 3074.
 var T = [256]uint8{

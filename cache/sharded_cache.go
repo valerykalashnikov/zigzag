@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"regexp"
 	"sync"
-
-	"github.com/valerykalashnikov/zigzag/helpers"
 )
 
 type ShardedCache map[string]*CacheShard
@@ -87,7 +85,7 @@ func (c ShardedCache) Items() map[string]*Item {
 }
 
 func (c ShardedCache) getShard(key string) *CacheShard {
-	shardKey := fmt.Sprintf("%02x", helpers.PearsonHash(key))
+	shardKey := fmt.Sprintf("%02x", PearsonHash(key))
 	return c[shardKey]
 }
 
