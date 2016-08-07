@@ -1,12 +1,11 @@
 package cache
 
 import (
-	"fmt"
 	"regexp"
 	"sync"
 )
 
-type ShardedCache map[string]*CacheShard
+type ShardedCache map[byte]*CacheShard
 
 type CacheShard struct {
 	items map[string]*Item
@@ -85,14 +84,14 @@ func (c ShardedCache) Items() map[string]*Item {
 }
 
 func (c ShardedCache) getShard(key string) *CacheShard {
-	shardKey := fmt.Sprintf("%02x", PearsonHash(key))
+	shardKey := PearsonHash(key)
 	return c[shardKey]
 }
 
 func NewShardedCache() DataStore {
 	c := make(ShardedCache, 256)
 	for i := 0; i < 256; i++ {
-		c[fmt.Sprintf("%02x", i)] = &CacheShard{
+		c[byte(i)] = &CacheShard{
 			items: make(map[string]*Item, 2048),
 			mux:   new(sync.RWMutex),
 		}
