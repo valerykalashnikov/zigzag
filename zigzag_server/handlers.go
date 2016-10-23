@@ -144,10 +144,10 @@ func requestBody(r *http.Request) ([]byte, error) {
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
 
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	if err := r.Body.Close(); err != nil {
-		panic(err)
+		return nil, err
 	}
 	return body, err
 }
