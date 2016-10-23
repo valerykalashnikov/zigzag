@@ -120,7 +120,7 @@ func Keys(db *zigzag.DB, w http.ResponseWriter, r *http.Request) (int, error) {
 	}
 	keys := db.Keys(pattern)
 	if err := json.NewEncoder(w).Encode(keys); err != nil {
-		http.StatusInternalServerError, err
+		return http.StatusInternalServerError, err
 	}
 	return http.StatusOK, nil
 }
