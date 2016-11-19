@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/valerykalashnikov/zigzag/zigzag"
+	"github.com/valerykalashnikov/zigzag"
 )
 
 type Clock struct {

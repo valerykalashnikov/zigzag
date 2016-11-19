@@ -12,9 +12,9 @@ import (
 
 	"time"
 
+	"github.com/valerykalashnikov/zigzag"
 	"github.com/valerykalashnikov/zigzag/importers"
 	"github.com/valerykalashnikov/zigzag/jobs"
-	"github.com/valerykalashnikov/zigzag/zigzag"
 )
 
 var lightning = `
