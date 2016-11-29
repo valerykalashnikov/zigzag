@@ -11,8 +11,7 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
-	"github.com/valerykalashnikov/zigzag/structures"
-	"github.com/valerykalashnikov/zigzag/zigzag"
+	"github.com/valerykalashnikov/zigzag"
 )
 
 func Index(db *zigzag.DB, w http.ResponseWriter, r *http.Request) (int, error) {
@@ -65,7 +64,7 @@ func Get(db *zigzag.DB, w http.ResponseWriter, r *http.Request) (int, error) {
 	if item, found := db.Get(key); found {
 		w.WriteHeader(http.StatusOK)
 		if err := json.NewEncoder(w).Encode(item); err != nil {
-			panic(err)
+			return http.StatusInternalServerError, err
 		}
 		return http.StatusOK, nil
 	}
@@ -131,7 +130,7 @@ func Keys(db *zigzag.DB, w http.ResponseWriter, r *http.Request) (int, error) {
 	}
 	keys := db.Keys(pattern)
 	if err := json.NewEncoder(w).Encode(keys); err != nil {
-		panic(err)
+		return http.StatusInternalServerError, err
 	}
 	return http.StatusOK, nil
 }
@@ -155,10 +154,10 @@ func requestBody(r *http.Request) ([]byte, error) {
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
 
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	if err := r.Body.Close(); err != nil {
-		panic(err)
+		return nil, err
 	}
 	return body, err
 }

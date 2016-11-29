@@ -4,8 +4,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/valerykalashnikov/zigzag"
 	"github.com/valerykalashnikov/zigzag/persistence"
-	"github.com/valerykalashnikov/zigzag/zigzag"
 )
 
 func SaveToFile(wg sync.WaitGroup, db *zigzag.DB, path string, period int) {

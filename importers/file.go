@@ -1,8 +1,8 @@
 package importers
 
 import (
+	"github.com/valerykalashnikov/zigzag"
 	"github.com/valerykalashnikov/zigzag/persistence"
-	"github.com/valerykalashnikov/zigzag/zigzag"
 	"time"
 )
 

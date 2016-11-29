@@ -4,7 +4,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/valerykalashnikov/zigzag/zigzag"
+	"github.com/valerykalashnikov/zigzag"
 )
 
 func CleanCache(wg sync.WaitGroup, db *zigzag.DB, checkForExpirationItemNum int) {

@@ -10,9 +10,11 @@ import (
 	"sync"
 	"syscall"
 
+	"time"
+
+	"github.com/valerykalashnikov/zigzag"
 	"github.com/valerykalashnikov/zigzag/importers"
 	"github.com/valerykalashnikov/zigzag/jobs"
-	"github.com/valerykalashnikov/zigzag/zigzag"
 )
 
 var lightning = `
@@ -124,6 +126,9 @@ func main() {
 	handleInterruptSignal(wg)
 
 	router := NewRouter(authToken, db)
+
+	srv := http.TimeoutHandler(router, 3*time.Second, "Timed out")
+
 	fmt.Println("* Listening on http://localhost:" + port)
-	log.Fatal(http.ListenAndServe(":"+port, router))
+	log.Fatal(http.ListenAndServe(":"+port, srv))
 }

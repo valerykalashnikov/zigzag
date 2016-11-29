@@ -1,30 +1,11 @@
 package cache
 
 import (
-	"bytes"
-	"fmt"
-	farm "github.com/dgryski/go-farm"
 	"regexp"
 	"sync"
 )
 
-type FarmHash struct {
-	buf bytes.Buffer
-}
-
-func (f *FarmHash) Write(p []byte) (n int, err error) {
-	return f.buf.Write(p)
-}
-
-func (f *FarmHash) Reset() {
-	f.buf.Reset()
-}
-
-func (f *FarmHash) Sum64() uint64 {
-	return farm.Hash64(f.buf.Bytes())
-}
-
-type ShardedCache map[string]*CacheShard
+type ShardedCache map[byte]*CacheShard
 
 type CacheShard struct {
 	items map[string]*Item
@@ -103,16 +84,14 @@ func (c ShardedCache) Items() map[string]*Item {
 }
 
 func (c ShardedCache) getShard(key string) *CacheShard {
-	hasher := &FarmHash{}
-	hasher.Write([]byte(key))
-	shardKey := fmt.Sprintf("%x", hasher.Sum64())[0:2]
+	shardKey := PearsonHash(key)
 	return c[shardKey]
 }
 
 func NewShardedCache() DataStore {
 	c := make(ShardedCache, 256)
 	for i := 0; i < 256; i++ {
-		c[fmt.Sprintf("%02x", i)] = &CacheShard{
+		c[byte(i)] = &CacheShard{
 			items: make(map[string]*Item, 2048),
 			mux:   new(sync.RWMutex),
 		}
