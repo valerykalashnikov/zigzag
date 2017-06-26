@@ -5,14 +5,14 @@ ZigZag is a golang implementation of in-memory key:value store/cache similar to 
 
 You can check out the golang toolkit [here](https://github.com/valerykalashnikov/thunder).
 
-##Supports
+## Supports
 
 ZigZag supports two types of storage:
 
 1. Simple storage - requires less resources but is locked at each operation in concurrent mode.
 2. Experimental support of sharded cache (now it is slowler than simple cache) - requires more resources but allows to reduce amount of locks in concurrent mode.
 
-##You can use it as
+## You can use it as
 
 1\. A data-structure storage with a JSON api.
   Supported features:
@@ -65,7 +65,7 @@ ZIGZAG_BACKUP_INTERVAL=interval_in_minutes
 
 ## How to use:
 
-###Set
+### Set
 Set key to hold the value. If key already holds a value, it is overwritten, regardless of its type. Any previous time to live associated with the key overwrites.
 
 * Without expiration time
@@ -76,24 +76,24 @@ Set key to hold the value. If key already holds a value, it is overwritten, rega
 
 ``` curl -v -H "Content-Type: application/json" -H "Authorization: Token password" -d '{"name":"Todo"}' http://localhost:8082/set/your_key?ex=1 ```
 
-###Get
+### Get
 Get the value of key. If the key does not exist 404 is returned
 
 ```curl -X GET -v -H "Content-Type: application/json" -H "Authorization: Token password" http://localhost:8082/get/your_key```
 
 
-###Update
+### Update
 Update the specified key. Time to live will not be overwritten.
 
 ```curl -X PUT -v -H "Content-Type: application/json" -H "Authorization: Token password" -d '{"name":"New todo"}' http://localhost:8082/update/your_key```
 
-###Keys
+### Keys
 Returns all keys matching pattern
 For example, all keys matching ^[a-z]* pattern (dont' forget about escaping)
 
 ```curl -X GET -v -H "Content-Type: application/json" -H "Authorization: Token password" http://localhost:8082/keys/%5E\[a-z\]\*```
 
-###Delete
+### Delete
 Remove the specified keys. A key is ignored if it does not exist
 
 ```curl -X DELETE -v -H "Content-Type: application/json" -H "Authorization: Token password" http://localhost:8082/delete/your_key```
