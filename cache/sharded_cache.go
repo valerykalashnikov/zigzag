@@ -35,6 +35,7 @@ func (c ShardedCache) Get(key string) (*Item, bool) {
 	if item, ok := shard.items[key]; ok {
 		return item, true
 	}
+
 	return nil, false
 }
 

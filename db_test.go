@@ -1,9 +1,10 @@
 package zigzag
 
 import (
-	"github.com/valerykalashnikov/zigzag/cache"
 	"testing"
 	"time"
+
+	"github.com/valerykalashnikov/zigzag/cache"
 	// "fmt"
 )
 
